@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import { getCourses, getMajor } from "@/lib/data";
+import { planSemester } from "@/lib/planner/semester";
 import type { SemesterPlanRequest } from "@/lib/types";
-import { mockSemesterPlan } from "@/mocks";
 
 // POST /api/plan/semester  SemesterPlanRequest -> SemesterPlanResponse
-// TODO(A): replace mock with the real planner
 export async function POST(req: Request) {
   const body = (await req.json()) as SemesterPlanRequest;
-  return NextResponse.json({ ...mockSemesterPlan, term: body.term ?? mockSemesterPlan.term });
+  const major = getMajor(body.majorId);
+  if (!major) return NextResponse.json({ error: `unknown major ${body.majorId}` }, { status: 404 });
+  return NextResponse.json(planSemester(body, major, getCourses()));
 }

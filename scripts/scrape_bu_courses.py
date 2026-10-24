@@ -15,6 +15,8 @@ import os
 import re
 import sys
 import time
+import threading
+import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -27,6 +29,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, "scripts", ".cache")
 OUT = os.path.join(ROOT, "data", "courses.json")
 UA = "Mozilla/5.0 (BU student hackathon project; course planner)"
+OFFLINE = False  # --offline: only use cached pages
+DELAY = 0.0  # seconds each worker waits between network requests (set by --delay)
+_blocked_until = [0.0]
+_lock = threading.Lock()
 
 SCHOOLS = "CAS|ENG|COM|CFA|CGS|SAR|SHA|SPH|QST|SMG|SED|WED|CDS|KHC|MET|LAW|SDM|SSW|STH|GMS|HUB|MED|OTP|XAS|XRG"
 # school is optional ("PY251" inherits the school of the code before it)
@@ -41,7 +47,13 @@ def fetch(url, retries=3):
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             return f.read()
+    if OFFLINE:
+        return ""
     for attempt in range(retries):
+        wait = _blocked_until[0] - time.time()
+        if wait > 0:
+            time.sleep(wait)
+        time.sleep(DELAY)
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=30) as r:
@@ -49,11 +61,21 @@ def fetch(url, retries=3):
             with open(path, "w", encoding="utf-8") as f:
                 f.write(body)
             return body
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 429):
+                # rate limited: every worker pauses, then we retry
+                with _lock:
+                    _blocked_until[0] = max(_blocked_until[0], time.time() + 90 * (attempt + 1))
+                print(f"  rate limited on {url}, pausing", file=sys.stderr)
+            elif e.code == 404 or attempt == retries - 1:
+                print(f"  ! {url}: {e}", file=sys.stderr)
+                return ""
         except Exception as e:  # noqa: BLE001
             if attempt == retries - 1:
                 print(f"  ! {url}: {e}", file=sys.stderr)
                 return ""
             time.sleep(2 * (attempt + 1))
+    return ""
 
 
 def text(s):
@@ -213,36 +235,24 @@ def split_recommended(s):
 
 # ---------- main ----------
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--colleges", default=",".join(COLLEGES))
-    ap.add_argument("--workers", type=int, default=8)
-    ap.add_argument("--skip-details", action="store_true")
-    args = ap.parse_args()
-    colleges = args.colleges.split(",")
+PRIORITY_DEPTS = {("CAS", d) for d in ["MA", "PY", "WR", "CS", "CH", "BI", "AS", "EC", "PH", "PS", "HI"]} | {
+    ("ENG", d) for d in ["EC", "EK", "BE", "ME"]} | {("CDS", "DS")}
 
-    with ThreadPoolExecutor(args.workers) as pool:
-        page_urls = []
-        for urls in pool.map(list_college, colleges):
-            page_urls += urls
-        print(f"phase 1: {len(page_urls)} listing pages")
-        courses = {}
-        for i, body in enumerate(pool.map(fetch, page_urls)):
-            for c in parse_listing(body):
-                courses.setdefault(c["code"], c)
-            if i % 50 == 0:
-                print(f"  listings {i}/{len(page_urls)}  courses so far {len(courses)}")
-        print(f"phase 1 done: {len(courses)} courses")
 
-        if not args.skip_details:
-            items = list(courses.values())
-            futures = {pool.submit(fetch, c["url"]): c for c in items}
-            for i, fut in enumerate(as_completed(futures)):
-                futures[fut].update(parse_course_page(fut.result()))
-                if i % 250 == 0:
-                    print(f"  details {i}/{len(items)}")
+def major_codes():
+    codes = set()
+    d = os.path.join(ROOT, "data", "majors")
+    for f in os.listdir(d) if os.path.isdir(d) else []:
+        m = json.load(open(os.path.join(d, f)))
+        codes |= {s["code"] for t in m["plan"] for s in t["slots"] if s["kind"] == "course"}
+        codes |= {c for g in m["electiveGroups"] for c in g["courses"]}
+    return codes
 
-    for c in courses.values():
+
+def finish(courses):
+    out = []
+    for raw in courses.values():
+        c = dict(raw)
         c.update(split_requisites(c.pop("summary")))
         full = c.pop("fullText", "")
         if not c["prereqText"] and full:
@@ -257,13 +267,61 @@ def main():
             c["level"] = int(re.match(r"\d+", c["number"]).group()) // 100 * 100
         except Exception:  # noqa: BLE001
             c["level"] = None
-
+        c.setdefault("hub", [])
+        c.setdefault("sections", [])
+        out.append(c)
+    out.sort(key=lambda c: c["code"])
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    ordered = sorted(courses.values(), key=lambda c: c["code"])
-    with open(OUT, "w", encoding="utf-8") as f:
-        json.dump(ordered, f, ensure_ascii=False, separators=(",", ":"))
-    with_sections = sum(1 for c in ordered if c.get("sections"))
-    print(f"wrote {len(ordered)} courses ({with_sections} with sections) to {OUT}")
+    tmp = OUT + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp, OUT)
+    with_sections = sum(1 for c in out if c["sections"])
+    print(f"wrote {len(out)} courses ({with_sections} with sections) to {OUT}")
+
+
+def main():
+    global DELAY, OFFLINE
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--colleges", default=",".join(COLLEGES))
+    ap.add_argument("--workers", type=int, default=2)
+    ap.add_argument("--delay", type=float, default=1.0)
+    ap.add_argument("--skip-details", action="store_true")
+    ap.add_argument("--offline", action="store_true", help="build from cached pages only")
+    args = ap.parse_args()
+    DELAY = args.delay
+    OFFLINE = args.offline
+    colleges = args.colleges.split(",")
+
+    with ThreadPoolExecutor(args.workers) as pool:
+        page_urls = []
+        for urls in pool.map(list_college, colleges):
+            page_urls += urls
+        print(f"phase 1: {len(page_urls)} listing pages")
+        courses = {}
+        for i, body in enumerate(pool.map(fetch, page_urls)):
+            for c in parse_listing(body):
+                courses.setdefault(c["code"], c)
+            if i % 50 == 0:
+                print(f"  listings {i}/{len(page_urls)}  courses so far {len(courses)}")
+        print(f"phase 1 done: {len(courses)} courses")
+        finish(courses)
+
+        if not args.skip_details:
+            wanted = major_codes()
+            items = sorted(courses.values(), key=lambda c: (
+                c["code"] not in wanted,
+                (c["college"], c["dept"]) not in PRIORITY_DEPTS,
+                (int(re.match(r"\d+", c["number"]).group()) if re.match(r"\d+", c["number"]) else 999) >= 600,
+                c["code"],
+            ))
+            futures = {pool.submit(fetch, c["url"]): c for c in items}
+            for i, fut in enumerate(as_completed(futures)):
+                futures[fut].update(parse_course_page(fut.result()))
+                if i % 200 == 0:
+                    print(f"  details {i}/{len(items)}")
+                    finish(courses)
+        finish(courses)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,108 @@
+{
+  "id": "ce",
+  "name": "Computer Engineering",
+  "school": "ENG",
+  "classOf": "2029",
+  "totalUnits": 133,
+  "plan": [
+    { "term": "First-year 1", "slots": [
+      { "kind": "course", "code": "CAS MA 123" },
+      { "kind": "elective", "group": "natsci" },
+      { "kind": "course", "code": "ENG EK 100" },
+      { "kind": "course", "code": "ENG EK 125" },
+      { "kind": "course", "code": "CAS WR 120" }
+    ] },
+    { "term": "First-year 2", "slots": [
+      { "kind": "course", "code": "CAS MA 124" },
+      { "kind": "course", "code": "CAS PY 211" },
+      { "kind": "course", "code": "ENG EK 131" },
+      { "kind": "course", "code": "ENG EK 103" },
+      { "kind": "elective", "group": "wr15x" }
+    ] },
+    { "term": "Sophomore 1", "slots": [
+      { "kind": "course", "code": "CAS MA 225" },
+      { "kind": "course", "code": "CAS PY 212" },
+      { "kind": "course", "code": "ENG EK 307" },
+      { "kind": "course", "code": "ENG EC 327" },
+      { "kind": "course", "code": "CAS MA 193" }
+    ] },
+    { "term": "Sophomore 2", "slots": [
+      { "kind": "course", "code": "CAS MA 226" },
+      { "kind": "course", "code": "ENG EC 311" },
+      { "kind": "course", "code": "ENG EK 301" },
+      { "kind": "course", "code": "ENG EK 210" },
+      { "kind": "course", "code": "ENG EC 330" }
+    ] },
+    { "term": "Junior 1", "slots": [
+      { "kind": "course", "code": "ENG EK 381" },
+      { "kind": "course", "code": "ENG EC 413" },
+      { "kind": "elective", "group": "core" },
+      { "kind": "hub" }
+    ] },
+    { "term": "Junior 2", "slots": [
+      { "kind": "elective", "group": "eebreadth" },
+      { "kind": "elective", "group": "ceelective" },
+      { "kind": "elective", "group": "core" },
+      { "kind": "hub" }
+    ] },
+    { "term": "Senior 1", "slots": [
+      { "kind": "elective", "group": "ceelective" },
+      { "kind": "elective", "group": "technical" },
+      { "kind": "course", "code": "ENG EC 463" },
+      { "kind": "hub" }
+    ] },
+    { "term": "Senior 2", "slots": [
+      { "kind": "elective", "group": "technical" },
+      { "kind": "elective", "group": "technical" },
+      { "kind": "course", "code": "ENG EC 464" },
+      { "kind": "hub" }
+    ] }
+  ],
+  "electiveGroups": [
+    { "id": "natsci", "name": "Natural Science Elective", "count": 1, "courses": [
+      "CAS AS 202", "CAS BI 107", "CAS BI 108", "CAS CH 101", "CAS CH 131", "CAS PY 313", "CAS PY 314", "CAS PY 451"
+    ] },
+    { "id": "wr15x", "name": "Writing & Research Seminar (WR 15x)", "count": 1, "courses": [
+      "CAS WR 150", "CAS WR 151", "CAS WR 152", "CAS WR 153"
+    ] },
+    { "id": "core", "name": "CE Core Elective", "count": 2, "courses": [
+      "ENG EC 401", "ENG EC 410", "ENG EC 427", "ENG EC 440", "ENG EC 441", "ENG EC 444"
+    ] },
+    { "id": "ceelective", "name": "Computer Engineering Elective", "count": 2, "courses": [
+      "ENG EC 427", "ENG EC 440", "ENG EC 441", "ENG EC 444", "ENG EC 504", "ENG EC 513", "ENG EC 518",
+      "ENG EC 521", "ENG EC 523", "ENG EC 526", "ENG EC 527", "ENG EC 528", "ENG EC 530", "ENG EC 531",
+      "ENG EC 535", "ENG EC 541", "ENG EC 544", "ENG EC 545", "ENG EC 551", "ENG EC 552", "ENG EC 571",
+      "CAS CS 320", "CAS CS 350", "CAS CS 410", "CAS CS 411", "CAS CS 505", "CAS CS 511", "CAS CS 525",
+      "CAS CS 530", "CAS CS 535", "CAS CS 538", "CAS CS 548", "CAS CS 552", "CAS CS 558", "CAS CS 562",
+      "CAS CS 565"
+    ] },
+    { "id": "eebreadth", "name": "EE Breadth Elective", "count": 1, "courses": [
+      "ENG EC 401", "ENG EC 410", "ENG EC 455"
+    ], "rule": "Also any EE Core Elective on the EE planning sheet except EC 541 and EC 571." },
+    { "id": "technical", "name": "Technical Elective", "count": 3, "courses": [
+      "ENG EC 427", "ENG EC 440", "ENG EC 441", "ENG EC 444", "ENG EC 504", "ENG EC 513", "ENG EC 518",
+      "ENG EC 521", "ENG EC 523", "ENG EC 526", "ENG EC 527", "ENG EC 528", "ENG EC 530", "ENG EC 531",
+      "ENG EC 535", "ENG EC 541", "ENG EC 544", "ENG EC 545", "ENG EC 551", "ENG EC 552", "ENG EC 571",
+      "CAS CS 320", "CAS CS 350", "CAS CS 410", "CAS CS 411", "CAS CS 505", "CAS CS 511", "CAS CS 525",
+      "CAS CS 530", "CAS CS 535", "CAS CS 538", "CAS CS 548", "CAS CS 552", "CAS CS 558", "CAS CS 562",
+      "CAS CS 565", "ENG BE 209", "CAS AS 414", "CAS CS 440", "CAS CS 480", "CAS CS 585", "CAS MA 511",
+      "CAS MA 528", "CAS MA 531", "CAS MA 541", "CAS MA 583", "CAS PY 313", "CAS PY 314", "CAS PY 451",
+      "CAS PY 452", "CDS DS 310", "CDS DS 340", "CDS DS 453", "CDS DS 563"
+    ], "rule": "Any ENG EC, BE, EK or ME course at the 300-level or above (not 600-level) also counts. At most 4 units of EC 451; at most two of QST SI 480, QST SI 482, HUB XC 433, HUB XC 438." }
+  ],
+  "hubRequired": [
+    "Philosophical Inquiry and Life's Meanings",
+    "Aesthetic Exploration",
+    "Historical Consciousness",
+    "Social Inquiry",
+    "The Individual in Community",
+    "Global Citizenship and Intercultural Literacy",
+    "Global Citizenship and Intercultural Literacy",
+    "Ethical Reasoning"
+  ],
+  "notes": [
+    "Students planning to study abroad sophomore 2 should take EK 301 in sophomore 1.",
+    "48 units of upper-division program coursework required (not including Hub or writing).",
+    "Only one of each overlapping set counts: EK 103 / MA 242 / MA 442; EK 381 / MA 581; BE 403 / EC 401; PY 313 / PY 314 / PY 321 & 322."
+  ]
+}
