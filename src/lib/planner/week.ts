@@ -2,6 +2,9 @@ import type { Day, EventKind, PlannedCourse, WeekEvent, WeekPlanRequest, WeekPla
 import { DAYS } from "@/lib/types";
 
 const GRID = 15; // place things on 15-minute marks
+
+/** To-dos that are exercise get morning slots on light days and show as "gym" on the calendar. */
+export const isExercise = (name: string) => /\b(gym|fitrec|work ?out|run|running|lift|yoga|swim|exercise|sport|practice)\b/i.test(name);
 const BUFFER = 10; // walking time kept free around events
 
 /** Turn chosen course sections into fixed weekly class events. */
@@ -54,18 +57,36 @@ export function planWeek(req: WeekPlanRequest): WeekPlanResponse {
     if (!place(day, 45, 1050, 1230, "Dinner", "meal")) unscheduled.push(`Dinner ${day}`);
   }
 
-  // Gym on the days with the most free time; mornings, then late afternoon.
-  const gymDays = [...DAYS].sort((a, b) => busyMinutes(a) - busyMinutes(b)).slice(0, prefs.gymDaysPerWeek);
-  for (const day of DAYS.filter((d) => gymDays.includes(d))) {
-    const ok =
-      place(day, prefs.gymMinutes, prefs.wakeTime + 30, 600, "Gym (FitRec)", "gym") ||
-      place(day, prefs.gymMinutes, 960, 1290, "Gym (FitRec)", "gym") ||
-      place(day, prefs.gymMinutes, 600, 960, "Gym (FitRec)", "gym");
-    if (!ok) unscheduled.push(`Gym ${day}`);
+  // Weekly to-dos. Older profiles stored gym as two numbers; treat that as a "Gym" task.
+  const tasks = [...prefs.tasks];
+  if (prefs.gymDaysPerWeek && !tasks.some((t) => isExercise(t.name))) {
+    tasks.unshift({ name: "Gym", minutes: prefs.gymMinutes || 60, timesPerWeek: prefs.gymDaysPerWeek });
   }
 
-  // Study blocks of up to 90 minutes, rotating through the week's classes.
-  const subjects = [...new Set(req.fixed.filter((e) => e.kind === "class").map((e) => e.title.split(" ").slice(0, 2).join(" ")))];
+  // Exercise goes on the days with the most free time; mornings, then late afternoon, then midday.
+  for (const task of tasks.filter((t) => isExercise(t.name))) {
+    const days = [...DAYS].sort((a, b) => busyMinutes(a) - busyMinutes(b)).slice(0, Math.min(7, task.timesPerWeek));
+    for (const day of DAYS.filter((d) => days.includes(d))) {
+      const ok =
+        place(day, task.minutes, prefs.wakeTime + 30, 600, task.name, "gym") ||
+        place(day, task.minutes, 960, 1290, task.name, "gym") ||
+        place(day, task.minutes, 600, 960, task.name, "gym");
+      if (!ok) unscheduled.push(`${task.name} ${day}`);
+    }
+  }
+
+  // Study blocks of up to 90 minutes, rotating through the week's classes. Courses with exams or
+  // deadlines coming up (req.focus) get extra turns, most urgent first, and say what they're for.
+  const classSubjects = [...new Set(req.fixed.filter((e) => e.kind === "class").map((e) => e.title.split(" ").slice(0, 2).join(" ")))];
+  const focus = req.focus ?? [];
+  const top = focus[0]?.weight ?? 0;
+  const subjects: string[] = [];
+  for (const f of focus) subjects.push(...Array(Math.max(1, Math.round((f.weight / Math.max(top, 1)) * 3))).fill(f.subject));
+  for (const c of classSubjects) if (!focus.some((f) => f.subject === c)) subjects.push(c);
+  const titleFor = (subject: string) => {
+    const f = focus.find((x) => x.subject === subject);
+    return f ? `Study for ${f.label}` : `Study: ${subject}`;
+  };
   let s = 0;
   for (const day of DAYS) {
     const weekend = day === "Sat" || day === "Sun";
@@ -73,7 +94,7 @@ export function planWeek(req: WeekPlanRequest): WeekPlanResponse {
     while (left >= 30) {
       const len = Math.min(90, left);
       const subject = subjects.length ? subjects[s++ % subjects.length] : "";
-      if (!place(day, len, 540, bed - 30, `Study${subject ? `: ${subject}` : ""}`, "study")) {
+      if (!place(day, len, 540, bed - 30, subject ? titleFor(subject) : "Study", "study")) {
         unscheduled.push(`${Math.round(left / 6) / 10}h study ${day}`);
         break;
       }
@@ -81,9 +102,9 @@ export function planWeek(req: WeekPlanRequest): WeekPlanResponse {
     }
   }
 
-  // Weekly tasks spread across the week, evenings first.
+  // Other weekly tasks spread across the week, evenings first.
   const spread: Day[] = ["Sun", "Wed", "Fri", "Tue", "Sat", "Mon", "Thu"];
-  for (const task of prefs.tasks) {
+  for (const task of tasks.filter((t) => !isExercise(t.name))) {
     for (let i = 0; i < task.timesPerWeek; i++) {
       const day = spread[(i * Math.max(1, Math.floor(7 / task.timesPerWeek))) % 7];
       const ok = place(day, task.minutes, 1080, bed, task.name, "task") || place(day, task.minutes, prefs.wakeTime, bed, task.name, "task");

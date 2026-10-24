@@ -95,11 +95,26 @@ FEED_ITEM_RE = re.compile(
 )
 
 
-def list_college(college):
-    first = fetch(f"{BASE}/{college}/courses/")
-    pages = [int(n) for n in re.findall(rf"academics/{college}/courses/(\d+)/", first)]
+def paginate(first_url, body):
+    """first_url plus every numbered page linked from it (".../courses/2/", ...)."""
+    pages = [int(n) for n in re.findall(re.escape(first_url.replace("https://www.bu.edu", "")) + r"(\d+)/", body)]
+    pages += [int(n) for n in re.findall(re.escape(first_url) + r"(\d+)/", body)]
     last = max(pages) if pages else 1
-    urls = [f"{BASE}/{college}/courses/"] + [f"{BASE}/{college}/courses/{n}/" for n in range(2, last + 1)]
+    return [first_url] + [f"{first_url}{n}/" for n in range(2, last + 1)]
+
+
+def list_college(college):
+    """Listing pages for a college. The college-wide feed silently omits some departments
+    (e.g. CAS Chemistry), so also walk every department's own feed and union the results."""
+    root = f"{BASE}/{college}/courses/"
+    first = fetch(root)
+    urls = paginate(root, first)
+    depts = sorted(set(re.findall(rf'href="(?:https://www\.bu\.edu)?/academics/{college}/courses/([a-z][a-z-]+)/"', first)))
+    for slug in depts:
+        if re.match(rf"{college}-[a-z]+-\d", slug):  # a course page, not a department
+            continue
+        dept_root = f"{root}{slug}/"
+        urls += paginate(dept_root, fetch(dept_root))
     return urls
 
 
@@ -158,9 +173,13 @@ def parse_course_page(body):
     desc = re.search(r'<div id="course-content">.*?</div>\s*<p>(.*?)</p>', body, re.S)
     if desc:
         info["fullText"] = text(desc.group(1))
-    sections = []
+    sections, seen = [], set()
     for term, table in TERM_TABLE_RE.findall(body):
         for sec, instr, loc, sched, notes in ROW_RE.findall(table):
+            key = (text(term), text(sec), text(sched), text(loc))
+            if key in seen:  # BU repeats some rows verbatim (e.g. CAS IN 299 A1 five times)
+                continue
+            seen.add(key)
             sections.append({
                 "term": text(term).title(),
                 "section": text(sec),
@@ -203,6 +222,32 @@ def split_requisites(summary):
     return reqs
 
 
+SLASH_RE = re.compile(rf"\b(?:({SCHOOLS})\s?)?([A-Z]{{2}})\s?(\d{{3}})((?:\s*/\s*\d{{1,3}})+)")
+
+
+def expand_slashes(s):
+    """"CAS WR 150/1/2/3" and "WR 150/151/152" -> "CAS WR 150 or CAS WR 151 or ..." (BU's shorthand for alternatives)."""
+    def repl(m):
+        school, dept, first, rest = m.group(1), m.group(2), m.group(3), m.group(4)
+        nums = [first]
+        for part in re.findall(r"\d{1,3}", rest):
+            nums.append(first[: 3 - len(part)] + part)
+        prefix = f"{school} " if school else ""
+        return " or ".join(f"{prefix}{dept} {n}" for n in nums)
+    s = SLASH_RE.sub(repl, s)
+    # "CAS WR 150 or 151 or 152": bare numbers after a code inherit its department
+    return BARE_OR_RE.sub(lambda m: m.group(0) if not m.group(4) else repl_bare(m), s)
+
+
+BARE_OR_RE = re.compile(rf"\b(?:({SCHOOLS})\s?)?([A-Z]{{2}})\s?(\d{{3}})((?:\s*(?:or|,)\s*\d{{3}}\b)+)")
+
+
+def repl_bare(m):
+    school, dept, first, rest = m.group(1), m.group(2), m.group(3), m.group(4)
+    prefix = f"{school} " if school else ""
+    return " or ".join(f"{prefix}{dept} {n}" for n in [first, *re.findall(r"\d{3}", rest)])
+
+
 def codes_in(s, default_school=None):
     out, school = [], default_school
     for sch, dept, num in CODE_RE.findall(s):
@@ -219,6 +264,7 @@ def parse_req_expr(s, default_school=None):
     """
     if not s:
         return []
+    s = expand_slashes(s)
     groups, school = [], default_school
     for part in re.split(r";|\band\b|&", s, flags=re.I):
         alts = codes_in(part, school)

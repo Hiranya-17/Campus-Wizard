@@ -65,3 +65,29 @@ export async function setJSON(key: string, value: unknown): Promise<void> {
   else if (storeKind === "memory") memory.set(key, raw);
   else fs.writeFileSync(FILE, JSON.stringify({ ...readFile(), [key]: raw }));
 }
+
+const counters = new Map<string, { n: number; until: number }>();
+
+/** Count a hit on `key` inside a window of `ttlSeconds`; returns the count so far. Used for rate limits. */
+export async function incr(key: string, ttlSeconds: number): Promise<number> {
+  if (storeKind === "redis") {
+    const n = Number(await redis(["INCR", key]));
+    if (n === 1) await redis(["EXPIRE", key, ttlSeconds]);
+    return n;
+  }
+  if (storeKind === "redis-tcp") {
+    const client = await tcpClient();
+    const n = await client.incr(key);
+    if (n === 1) await client.expire(key, ttlSeconds);
+    return n;
+  }
+  // memory/file: per-process counter, fine for local development
+  const now = Date.now();
+  const c = counters.get(key);
+  if (!c || c.until < now) {
+    counters.set(key, { n: 1, until: now + ttlSeconds * 1000 });
+    return 1;
+  }
+  c.n += 1;
+  return c.n;
+}

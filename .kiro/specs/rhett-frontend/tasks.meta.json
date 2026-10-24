@@ -1,0 +1,262 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Define `ApiError` class and the private `post<TReq, TRes>` helper": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792865687901
+      }
+    ],
+    "1.2 Implement `postSemesterPlan`, `postWeekPlan`, and `postChat` with mock bypass": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792865689853
+      }
+    ],
+    "1. Create `src/lib/api.ts` — typed API client with mock bypass": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792865689945
+      }
+    ],
+    "2.1 Replace the Money tab with a Food tab": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792865697599
+      },
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866219083
+      }
+    ],
+    "2.2 Add `aria-hidden=\"true\"` to each SVG icon and verify 44 px tap targets": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866221030
+      }
+    ],
+    "2. Update `BottomNav` — Food tab, ARIA, tap targets": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866221093
+      }
+    ],
+    "8.1 Confirm all 6 required manifest fields are correct": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866222980
+      },
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866224797
+      }
+    ],
+    "8. Verify manifest and icon (`public/manifest.webmanifest`, `public/icon.svg`)": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866224846
+      }
+    ],
+    "3.1 Switch API calls to `postSemesterPlan` / `postWeekPlan` from `src/lib/api.ts`; add mock bypass and error state": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866227413
+      },
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866763137
+      }
+    ],
+    "4.1 Switch to `postSemesterPlan` from `src/lib/api.ts` and add error state": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866227862
+      },
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866768790
+      }
+    ],
+    "5.1 Switch to `postWeekPlan` from `src/lib/api.ts`; add separate error states for plan build and ICS download": [
+      {
+        "executionId": "b4683569-30f1-4528-a294-fd258ce8e5ad",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866228324
+      },
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866770576
+      }
+    ],
+    "3.2 Add whitespace guard on Ask Rhett form and sort upcoming events ascending": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866765388
+      }
+    ],
+    "3.3 Extract `HomeSchedulePreview` component (inline in `page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866765845
+      }
+    ],
+    "3.4 Extract `QuickActionGrid` component (inline in `page.tsx`) and update tiles": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866766498
+      }
+    ],
+    "3. Polish Home page (`src/app/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866766545
+      }
+    ],
+    "4.2 Add \"No courses found\" empty state to course search dropdown": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866769500
+      }
+    ],
+    "4.3 Extract `PlanCourseChecklist` component (inline in `plan/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866770058
+      }
+    ],
+    "4. Polish Plan page (`src/app/plan/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866770109
+      }
+    ],
+    "5.2 Extract `WeekPrefsForm` with enforced min/max constraints": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866771381
+      }
+    ],
+    "5.3 Extract `WeekToDoList` with input validation": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866771693
+      }
+    ],
+    "5. Polish Week page (`src/app/week/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866771743
+      }
+    ],
+    "7.1 Switch Chat page to use `postChat` from `src/lib/api.ts`": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792866774808
+      },
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867225321
+      }
+    ],
+    "7.2 Add 500-character `maxLength` to the chat input": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867226010
+      }
+    ],
+    "7.3 Extract `ChatBubble` component (inline in `chat/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867226530
+      }
+    ],
+    "7.4 Extract `ChatCards` component (inline in `chat/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867226984
+      }
+    ],
+    "7. Polish Chat page (`src/app/chat/page.tsx`)": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867227047
+      }
+    ],
+    "10.1 Apply `role=\"status\"` + `aria-live=\"polite\"` to all loading states; `role=\"alert\"` to all error states": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867229506
+      },
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867344931
+      }
+    ],
+    "10.2 Confirm focus management after form submits": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867345618
+      }
+    ],
+    "10.3 Verify `disabled` attribute discipline across all buttons": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867346152
+      },
+      {
+        "executionId": "f85f9697-06f0-485d-bac4-202d70104b72",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792870740814
+      }
+    ],
+    "10. Accessibility audit": [
+      {
+        "executionId": "b784b5dd-9180-4e49-9c80-3b86712036ac",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792867346225
+      }
+    ],
+    "6. Checkpoint — Ensure all tests pass": [
+      {
+        "executionId": "f85f9697-06f0-485d-bac4-202d70104b72",
+        "chatSessionId": "sess_afbbfc19-ebab-46b4-99f1-b57eef4305d2",
+        "timestamp": 1792870739882
+      }
+    ]
+  }
+}

@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest --run",
+    "validate:majors": "node scripts/validate-majors.mjs",
+    "check": "tsc --noEmit && eslint src && vitest --run && node scripts/validate-majors.mjs"
   },
   "dependencies": {
+    "jspdf": "4.2.1",
     "next": "^15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "read-excel-file": "9.3.12",
     "redis": "^4.7.0",
     "server-only": "^0.0.1"
   },
@@ -23,7 +28,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15.5.28",
+    "fast-check": "3.23.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "2.1.9"
   }
 }

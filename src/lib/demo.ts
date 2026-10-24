@@ -4,9 +4,10 @@ export const DEFAULT_PREFS: WeekPrefs = {
   sleepHours: 8,
   wakeTime: 450,
   studyHoursPerDay: 3,
-  gymDaysPerWeek: 3,
-  gymMinutes: 60,
-  tasks: [{ name: "Call parents", minutes: 30, timesPerWeek: 1 }],
+  tasks: [
+    { name: "Gym", minutes: 60, timesPerWeek: 3 },
+    { name: "Call parents", minutes: 30, timesPerWeek: 1 },
+  ],
 };
 
 export const DEFAULT_BUDGET: Budget = {
@@ -39,7 +40,7 @@ export const DEMO_PROFILE: Profile = {
   term: "Fall 2026",
   completed: [
     "CAS MA 123", "CAS CH 131", "ENG EK 100", "ENG EK 125", "CAS WR 120",
-    "CAS MA 124", "CAS PY 211", "ENG EK 131", "ENG EK 103", "CAS WR 150",
+    "CAS MA 124", "CAS PY 211", "ENG EK 131", "ENG EK 103", "CAS WR 151",
   ],
   prefs: DEFAULT_PREFS,
   home: "WARREN",
@@ -59,3 +60,22 @@ export function starterProfile(p: Pick<Profile, "name" | "majorId" | "standing" 
 export function standingFor(units: number): Profile["standing"] {
   return units < 32 ? "freshman" : units < 64 ? "sophomore" : units < 96 ? "junior" : "senior";
 }
+
+/** A realistic syllabus excerpt for the "Try a sample syllabus" button (dates in the Fall 2026 term). */
+export const SAMPLE_SYLLABUS = {
+  courseCode: "CAS MA 226",
+  text: `CAS MA 226 Differential Equations, Fall 2026
+Instructor: Prof. Stevens. Lectures TR 9:30-10:45 am, LSE B01.
+
+Grading: Homework 20% (8 problem sets, lowest dropped), Quizzes 10%, Midterm 1 20%, Midterm 2 20%, Final exam 30%.
+
+Schedule of graded work
+HW 5 due Friday, Oct 30 at 11:59 pm: Ch. 4 second-order linear equations
+Quiz 3 on Tuesday, Nov 3 in class (9:30 am): undetermined coefficients
+Midterm 2 on Thursday, Nov 5, 9:30-10:45 am in LSE B01, covers Ch. 4-5: second-order equations, Laplace transforms
+HW 6 due Friday, Nov 13 at 11:59 pm: Laplace transforms
+HW 7 due Friday, Nov 20 at 11:59 pm: systems of first-order equations
+Project proposal due Tuesday, Dec 1: modeling with ODEs
+HW 8 due Friday, Dec 4 at 11:59 pm: phase plane analysis
+Final exam on Tuesday, Dec 15, 9:00-11:00 am, cumulative: all chapters`,
+};

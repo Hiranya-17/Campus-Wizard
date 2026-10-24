@@ -9,7 +9,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!user) return NextResponse.json({ error: "not logged in" }, { status: 401 });
 
   const { id } = await params;
-  if (!id) return NextResponse.json({ error: "missing id" }, { status: 400 });
+  // Gmail ids are short hex/base64url strings; anything else could steer the request to another Gmail API path
+  if (!id || !/^[A-Za-z0-9_-]{1,64}$/.test(id)) return NextResponse.json({ error: "invalid id" }, { status: 400 });
 
   try {
     const message = await getMessage(user.id, id);

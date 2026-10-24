@@ -23,6 +23,7 @@ export async function POST(req: Request) {
   if (!weekOf || !Array.isArray(events) || events.length === 0) {
     return NextResponse.json({ error: "weekOf and events are required" }, { status: 400 });
   }
+  if (events.length > 200) return NextResponse.json({ error: "Too many events (max 200)." }, { status: 413 });
 
   // Basic date format validation
   if (!/^\d{4}-\d{2}-\d{2}$/.test(weekOf)) {

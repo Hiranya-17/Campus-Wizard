@@ -50,6 +50,14 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     return { reply: `Logged $${Number(spent[1]).toFixed(2)} at ${merchant} under ${category}.`, cards: card ? [card] : [] };
   }
 
+  if (/exam|midterm|final|quiz|homework|\bhw\b|\bdue\b|prioriti|what should i study|study for/.test(t)) {
+    const { result } = await runTool("study_plan", {}, profile);
+    const r = result as { message?: string; priorities?: { course: string; title: string; daysLeft: number; advice: string }[] };
+    if (r.message || !r.priorities?.length) return { reply: r.message ?? "Nothing due in the next three weeks.", cards: [] };
+    const lines = r.priorities.slice(0, 3).map((p, i) => `${i + 1}. ${p.course.split(" ").slice(1).join(" ")} ${p.title} (${p.daysLeft === 0 ? "today" : `${p.daysLeft} days`}): ${p.advice}`);
+    return { reply: `Prioritize:\n${lines.join("\n")}`, cards: [] };
+  }
+
   if (/budget|spent|spending|how much/.test(t)) {
     const { result, card } = await runTool("budget_summary", {}, profile);
     const r = result as { total: { spent: number; limit: number; projected: number } };
@@ -80,8 +88,19 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     const { result, card } = await runTool("plan_week", {}, profile);
     const r = result as { unscheduled: string[] };
     return {
-      reply: `Here's your week. ${r.unscheduled.length ? `Couldn't fit: ${r.unscheduled.join(", ")}.` : "Everything fit."} Change your sleep, study or gym settings in Week settings.`,
+      reply: `Here's your week. ${r.unscheduled.length ? `Couldn't fit: ${r.unscheduled.join(", ")}.` : "Everything fit."} Change your sleep, study and to-dos on the Week tab.`,
       cards: card ? [card] : [],
+    };
+  }
+
+  if (/dining hall|dining|on campus|warren|marciano|west campus|granby|where (should|can) i eat/.test(t)) {
+    const { result } = await runTool("dining_halls", { cuisine: t.match(/\b(italian|asian|mexican|indian|mediterranean|american|vegan|vegetarian|halal|spicy|pizza|pasta)\b/)?.[1] ?? "" }, profile);
+    const r = result as { halls: { name: string; openNow: boolean; current: string | null }[]; recommendations: { hallName: string; items: string[] }[] };
+    const open = r.halls.filter((h) => h.openNow).map((h) => h.name);
+    const top = r.recommendations[0];
+    return {
+      reply: `${open.length ? `Open now: ${open.join(", ")}.` : "No dining halls are open right now."}${top ? ` Try ${top.hallName}: ${top.items.join(", ")} (sample menu).` : ""} See the Food tab for hours.`,
+      cards: [],
     };
   }
 

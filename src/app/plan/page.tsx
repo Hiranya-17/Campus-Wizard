@@ -4,6 +4,7 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { CourseHistoryPicker } from "@/components/CourseHistoryPicker";
 import { courseColor, ScheduleCalendar } from "@/components/ScheduleCalendar";
 import { missingPrereqs, SectionPicker } from "@/components/SectionPicker";
+import { SyllabusCard } from "@/components/SyllabusCard";
 import { Card, Pill } from "@/components/ui";
 import { useProfile } from "@/lib/profile";
 import { conflicts, emptySchedule, shortCode, withCourse, withoutCourse } from "@/lib/schedule";
@@ -18,6 +19,7 @@ export default function PlanPage() {
   const schedule = profile.semester?.term === term ? profile.semester : emptySchedule(term);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<Hit[]>([]);
+  const [searched, setSearched] = useState(false);
   const [open, setOpen] = useState<Course | null>(null);
   const [preview, setPreview] = useState<Section[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -26,9 +28,17 @@ export default function PlanPage() {
   const [rhett, setRhett] = useState(false);
 
   useEffect(() => {
+    setSearched(false);
     if (q.trim().length < 2) return setHits([]);
     const t = setTimeout(
-      () => fetch(`/api/courses?q=${encodeURIComponent(q)}&term=${encodeURIComponent(term)}`).then((r) => r.json()).then(setHits),
+      () =>
+        fetch(`/api/courses?q=${encodeURIComponent(q)}&term=${encodeURIComponent(term)}`)
+          .then((r) => r.json())
+          .then((list: Hit[]) => {
+            setHits(list);
+            setSearched(true);
+          })
+          .catch(() => setSearched(true)),
       200,
     );
     return () => clearTimeout(t);
@@ -47,6 +57,7 @@ export default function PlanPage() {
   const openCourse = async (code: string) => {
     const full: Course = catalog[code] ?? (await fetch(`/api/courses?code=${encodeURIComponent(code)}`).then((r) => r.json()));
     setCatalog((m) => ({ ...m, [code]: full }));
+    setPreview(null);
     setOpen(full);
     setQ("");
     setHits([]);
@@ -75,7 +86,10 @@ export default function PlanPage() {
       </div>
 
       {term !== "Fall 2026" && (
-        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">BU hasn&apos;t posted {term} sections yet. You can still add courses; times appear once BU publishes them.</p>
+        <div className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <span className="flex-1">BU hasn&apos;t posted {term} sections yet, so there are no sections to pick.</span>
+          <button onClick={() => update({ term: "Fall 2026" })} className="shrink-0 rounded-lg bg-amber-800 px-2 py-1 font-semibold text-white">Switch to Fall 2026</button>
+        </div>
       )}
 
       <div className="relative">
@@ -83,8 +97,14 @@ export default function PlanPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search a course: WR 153, MA 226, intro to CS…"
+          aria-label="Search BU courses"
           className="w-full rounded-xl border border-zinc-300 bg-white p-3 text-sm shadow-sm"
         />
+        {searched && hits.length === 0 && q.trim().length >= 2 && (
+          <p role="status" className="absolute inset-x-0 top-full z-30 mt-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-500 shadow-lg">
+            No courses found for &ldquo;{q}&rdquo;. Try a code like &ldquo;MA 226&rdquo; or a title word.
+          </p>
+        )}
         {hits.length > 0 && (
           <ul className="absolute inset-x-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-zinc-200 bg-white text-sm shadow-lg">
             {hits.map((h) => (
@@ -104,6 +124,7 @@ export default function PlanPage() {
       {open && (
         <Card>
           <SectionPicker
+            key={open.code} // fresh picks for every course, never carried over from the last one
             course={open}
             term={term}
             schedule={schedule.courses}
@@ -111,6 +132,7 @@ export default function PlanPage() {
             onPreview={setPreview}
             onAdd={add}
             onClose={() => { setOpen(null); setPreview(null); }}
+            onSwitchTerm={term !== "Fall 2026" ? () => update({ term: "Fall 2026" }) : undefined}
           />
         </Card>
       )}
@@ -170,6 +192,8 @@ export default function PlanPage() {
           })}
         </ul>
       )}
+
+      <SyllabusCard profile={profile} update={update} />
 
       <Card className="!p-3">
         <button onClick={() => setHistory(!history)} className="flex w-full items-center justify-between text-sm font-semibold">

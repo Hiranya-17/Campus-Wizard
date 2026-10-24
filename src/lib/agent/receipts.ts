@@ -25,18 +25,20 @@ const id = () => `x${Date.now().toString(36)}${Math.random().toString(36).slice(
 
 export async function extractExpensesGemini(req: ExpenseExtractRequest): Promise<Expense[]> {
   const parts: unknown[] = [{
-    text: `Extract each purchase from this receipt or order confirmation for a Boston University student's budget.
+    text: `Extract each purchase from this receipt, order confirmation or bank/card statement for a Boston University student's budget.
+For a statement, list every purchase row; skip payments, refunds, deposits, transfers and interest.
 Categories: food (groceries, restaurants, delivery, coffee), transport (MBTA, Uber/Lyft rides, Bluebikes), textbooks (books, course materials, software for class), entertainment (movies, concerts, games, subscriptions), daily (toiletries, pharmacy, laundry, household).
 Use the final total actually charged. Today is ${today()}; if no date is shown, use today.`,
   }];
   if (req.text) parts.push({ text: req.text.slice(0, 30000) });
   if (req.imageBase64) parts.push({ inlineData: { mimeType: req.mimeType ?? "image/jpeg", data: req.imageBase64 } });
+  if (req.pdfBase64) parts.push({ inlineData: { mimeType: "application/pdf", data: req.pdfBase64 } });
   const data = await geminiGenerate({
     contents: [{ role: "user", parts }],
     generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA },
   });
   const raw: Partial<Expense>[] = JSON.parse((data.candidates?.[0]?.content?.parts?.[0]?.text as string) ?? "[]");
-  const source = req.imageBase64 ? "receipt" : "email";
+  const source = req.imageBase64 || req.pdfBase64 ? "receipt" : "email";
   return raw.map((e) => ({
     id: id(),
     date: e.date ?? today(),

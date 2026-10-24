@@ -92,10 +92,12 @@ export interface WeekPrefs {
   sleepHours: number; // 8
   wakeTime: Minutes; // 450 = 7:30 am
   studyHoursPerDay: number;
-  gymDaysPerWeek: number;
-  gymMinutes: number;
-  /** Anything else weekly: "Call parents", 30 min, once a week. */
+  /** Weekly to-dos: "Gym", 60 min, 3 times a week; "Call parents", 30 min, once a week. */
   tasks: { name: string; minutes: number; timesPerWeek: number }[];
+  /** @deprecated older profiles only; turned into a "Gym" task by the planner */
+  gymDaysPerWeek?: number;
+  /** @deprecated older profiles only */
+  gymMinutes?: number;
 }
 
 export type EventKind = "class" | "club" | "exam" | "study" | "gym" | "sleep" | "meal" | "task" | "travel";
@@ -115,6 +117,46 @@ export interface WeekPlanRequest {
   weekOf: string; // ISO date of the Monday, "2026-10-26"
   fixed: WeekEvent[]; // classes, club meetings, exams
   prefs: WeekPrefs;
+  /** Study emphasis from upcoming exams/deadlines: subject like "MA 226" -> weight; more weight, more study blocks. */
+  focus?: { subject: string; weight: number; label: string }[];
+}
+
+// ---------- syllabus: exams and homework (POST /api/syllabus) ----------
+
+export type AssignmentKind = "exam" | "quiz" | "homework" | "project" | "paper";
+
+export interface Assignment {
+  id: string;
+  courseCode: string; // "CAS MA 226"
+  title: string; // "Midterm 2", "HW 6"
+  kind: AssignmentKind;
+  date: string; // "2026-11-05"
+  time: Minutes | null; // exam start or due time; null = end of day
+  weight: number | null; // % of the final grade, if the syllabus says
+  topics: string[]; // what it covers
+  source: "syllabus" | "manual";
+}
+
+export interface SyllabusRequest {
+  courseCode: string;
+  text?: string;
+  pdfBase64?: string;
+}
+
+export interface SyllabusResponse {
+  courseCode: string;
+  items: Assignment[];
+  engine: "gemini" | "rules";
+  note?: string;
+}
+
+/** One line of "what to study" advice. */
+export interface StudyPriority {
+  assignment: Assignment;
+  daysLeft: number;
+  score: number;
+  suggestedHours: number;
+  advice: string; // "Review: Laplace transforms, systems of ODEs"
 }
 
 export interface WeekPlanResponse {
@@ -167,6 +209,68 @@ export interface ExtractResponse {
   engine: "gemini" | "rules";
 }
 
+// ---------- dining halls (data/dining.json, GET /api/dining) ----------
+
+/** A meal period's open/close for one weekday, minutes after midnight. null = closed that day. */
+export interface DiningHours {
+  day: Day;
+  /** Named service periods, e.g. "Breakfast" 420–660. Empty array = closed. */
+  periods: { name: string; start: Minutes; end: Minutes }[];
+}
+
+export interface DiningMenuItem {
+  name: string;
+  station: string; // "Grill", "Vegan", "Halal", "Comfort"
+  cuisine: string; // "American", "Italian", "Indian", "Mexican", "Asian", "Mediterranean", "Vegan", "Breakfast"
+  tags: string[]; // "vegan", "vegetarian", "halal", "gluten-free"
+  meals: ("breakfast" | "lunch" | "dinner")[]; // which periods serve it
+}
+
+export interface DiningHall {
+  id: string; // "west"
+  name: string; // "The Fresh Food Co. at West Campus"
+  building: string; // building code in data/buildings.json when known, else ""
+  address: string;
+  campus: "West" | "Central" | "East" | "Fenway";
+  style: string; // "All-you-care-to-eat", "Kosher"
+  payWith: string[]; // "Dining Plan Meals", "Convenience Points", "Dining Points", "Credit Cards", "Cash"
+  cuisines: string[]; // cuisines regularly available
+  features: string[]; // "Full Vegan Station", "Halal Options", "Gluten-Free Kitchen"
+  hours: DiningHours[];
+  /** Menu rotates by weekday; the API returns today's slice as `today`. */
+  menu: { day: Day; items: DiningMenuItem[] }[];
+  url: string;
+}
+
+/** One hall with today's computed status and menu, as returned by GET /api/dining. */
+export interface DiningHallToday {
+  hall: Omit<DiningHall, "menu" | "hours">;
+  hours: { name: string; start: Minutes; end: Minutes }[];
+  openNow: boolean;
+  /** The service period open right now, or the next one today, or null. */
+  currentPeriod: string | null;
+  items: DiningMenuItem[]; // today's menu
+}
+
+export interface DiningRecommendation {
+  hallId: string;
+  hallName: string;
+  items: string[]; // dishes to try there today
+  why: string; // one short sentence
+}
+
+// POST /api/dining/recommend  { cuisine, meal?, tags?, when? }
+export interface DiningRecommendRequest {
+  cuisine: string; // free text: "something spicy", "italian", "comfort food"
+  meal?: "breakfast" | "lunch" | "dinner";
+  tags?: string[]; // dietary filters: "vegan", "halal", "gluten-free"
+}
+
+export interface DiningRecommendResponse {
+  recommendations: DiningRecommendation[];
+  engine: "gemini" | "rules";
+}
+
 // ---------- food comparison ----------
 
 export interface FoodComparison {
@@ -205,6 +309,7 @@ export interface ExpenseExtractRequest {
   text?: string;
   imageBase64?: string;
   mimeType?: string; // "image/jpeg"
+  pdfBase64?: string; // a receipt or a bank/card statement as PDF
 }
 
 // ---------- the single demo user (kept in the browser, sent with each chat) ----------
@@ -217,6 +322,7 @@ export interface Profile {
   completed: string[]; // courses finished BEFORE the term being planned
   prefs?: WeekPrefs;
   clubs?: WeekEvent[]; // club meetings, from Gmail or typed in
+  assignments?: Assignment[]; // exams and homework from uploaded syllabi
   semester?: SemesterPlanResponse; // the student's chosen classes and sections for `term`
   home?: string; // building code where the day starts, e.g. "WARREN"
   expenses?: Expense[];

@@ -62,7 +62,7 @@ def build(major_id, name, url):
         wr = re.match(r"CAS WR 15\d", l)
         if wr:
             groups.setdefault("wr15x", {"id": "wr15x", "name": "Writing & Research Seminar (WR 15x)", "count": 0,
-                                        "courses": ["CAS WR 150", "CAS WR 151", "CAS WR 152", "CAS WR 153"]})
+                                        "courses": ["CAS WR 151", "CAS WR 152", "CAS WR 153"]})
             groups["wr15x"]["count"] += 1
             term["slots"].append({"kind": "elective", "group": "wr15x"})
         elif code:

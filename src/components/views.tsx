@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, Pill } from "@/components/ui";
 import { fmtTime, money } from "@/lib/format";
-import type { Course, Day, EventKind, FoodComparison, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
+import type { Course, Day, DiningHallToday, DiningRecommendation, EventKind, FoodComparison, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
 // ---------- semester ----------
@@ -148,7 +148,52 @@ export function EventRow({ e }: { e: WeekEvent }) {
 
 // ---------- food ----------
 
+const promoOf = (q: FoodComparison["quotes"][number]) =>
+  Math.max(0, Math.round((q.subtotal + q.deliveryFee + q.serviceFee + q.smallOrderFee + q.tax - q.total) * 100) / 100);
+
+/** Fee-by-fee table so it's clear where each app's price comes from (promotions make the columns add up). */
+function FeeTable({ r }: { r: FoodComparison }) {
+  const rows: [string, (q: FoodComparison["quotes"][number]) => number][] = [
+    ["Food", (q) => q.subtotal],
+    ["Delivery", (q) => q.deliveryFee],
+    ["Service", (q) => q.serviceFee],
+    ["Small order / bag", (q) => q.smallOrderFee],
+    ["Tax", (q) => q.tax],
+  ];
+  const promos = r.quotes.some((q) => promoOf(q) > 0.05);
+  return (
+    <table className="mt-2 w-full text-xs tabular-nums">
+      <thead>
+        <tr className="text-zinc-500">
+          <th className="py-1 text-left font-medium" />
+          {r.quotes.map((q) => <th key={q.app} className="py-1 text-right font-medium">{q.app}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(([label, get]) => (
+          <tr key={label} className="border-t border-zinc-100">
+            <td className="py-1 text-zinc-500">{label}</td>
+            {r.quotes.map((q) => <td key={q.app} className="py-1 text-right">{money(get(q))}</td>)}
+          </tr>
+        ))}
+        {promos && (
+          <tr className="border-t border-zinc-100 text-green-700">
+            <td className="py-1">Promotions</td>
+            {r.quotes.map((q) => <td key={q.app} className="py-1 text-right">{promoOf(q) > 0.05 ? `−${money(promoOf(q))}` : "—"}</td>)}
+          </tr>
+        )}
+        <tr className="border-t border-zinc-200 font-semibold">
+          <td className="py-1">Total</td>
+          {r.quotes.map((q) => <td key={q.app} className="py-1 text-right">{money(q.total)}</td>)}
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
 export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: (r: FoodComparison) => void }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const checked = data.flatMap((r) => r.quotes.map((q) => q.checkedAt)).sort().at(-1);
   return (
     <div className="space-y-3">
       {data.map((r) => (
@@ -167,17 +212,114 @@ export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: 
                   {q.app} {i === 0 && <span className="text-xs text-green-700">· cheapest</span>}
                   {q.acceptsConveniencePoints && <span className="ml-1 text-xs text-bu">· Convenience Points</span>}
                 </span>
-                <span className="tabular-nums" title={`Subtotal ${money(q.subtotal)} + delivery ${money(q.deliveryFee)} + service ${money(q.serviceFee)} + small order ${money(q.smallOrderFee)} + tax ${money(q.tax)}`}>
+                <span className="tabular-nums">
                   {money(q.total)} <span className="text-xs font-normal text-zinc-400">{q.etaMinutes}m</span>
                 </span>
               </li>
             ))}
           </ul>
+          <button onClick={() => setOpen(open === r.restaurant ? null : r.restaurant)} className="mt-1 text-xs font-medium text-zinc-500">
+            {open === r.restaurant ? "Hide fees ▲" : "Compare fees ▼"}
+          </button>
+          {open === r.restaurant && <FeeTable r={r} />}
           {onOrder && (
             <button onClick={() => onOrder(r)} className="mt-2 w-full rounded-lg border border-zinc-200 py-1.5 text-xs font-semibold text-bu">
               I ordered on {r.cheapest}: log {money(r.quotes[0].total)}
             </button>
           )}
+        </Card>
+      ))}
+      {checked && (
+        <p className="text-center text-[11px] text-zinc-400">
+          Same order, same address near campus. Totals include fees, tax and any promotions shown at checkout on{" "}
+          {new Date(checked).toLocaleDateString("en-US", { month: "short", day: "numeric" })}.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ---------- dining halls ----------
+
+const MEAL_TAG_TONE: Record<string, "green" | "amber" | "zinc"> = { vegan: "green", vegetarian: "green", halal: "amber", "gluten-free": "zinc" };
+
+/** One dining hall card: open-now status, today's hours and today's menu grouped by station. */
+export function DiningHallCard({ hall }: { hall: DiningHallToday }) {
+  const byStation = hall.items.reduce<Record<string, typeof hall.items>>((acc, it) => {
+    (acc[it.station] ??= []).push(it);
+    return acc;
+  }, {});
+  return (
+    <Card className="!p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-semibold leading-tight">{hall.hall.name}</p>
+          <p className="text-xs text-zinc-500">{hall.hall.campus} Campus · {hall.hall.style}</p>
+        </div>
+        <Pill tone={hall.openNow ? "green" : "zinc"}>{hall.openNow ? "Open now" : "Closed"}</Pill>
+      </div>
+
+      <p className="mt-2 text-xs text-zinc-600">
+        {hall.hours.length === 0
+          ? "Closed today"
+          : hall.hours.map((p) => `${p.name} ${fmtTime(p.start)}–${fmtTime(p.end)}`).join(" · ")}
+      </p>
+      {hall.currentPeriod && hall.hours.length > 0 && (
+        <p className="mt-0.5 text-[11px] text-bu">{hall.openNow ? `Serving ${hall.currentPeriod} now` : `Next: ${hall.currentPeriod}`}</p>
+      )}
+
+      {hall.hall.features.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {hall.hall.features.map((f) => <Pill key={f}>{f}</Pill>)}
+        </div>
+      )}
+
+      {hall.items.length > 0 ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-xs font-semibold text-zinc-500">Sample menu</p>
+          {Object.entries(byStation).map(([station, items]) => (
+            <div key={station}>
+              <p className="text-[11px] font-semibold text-zinc-400">{station}</p>
+              <ul className="space-y-0.5">
+                {items.map((it) => (
+                  <li key={it.name} className="flex flex-wrap items-center gap-1 text-sm">
+                    <span>{it.name}</span>
+                    {it.tags.map((t) => <Pill key={t} tone={MEAL_TAG_TONE[t] ?? "zinc"}>{t}</Pill>)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-zinc-400">No menu posted for today.</p>
+      )}
+
+      <a href={hall.hall.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-medium text-bu">BU Dining page →</a>
+    </Card>
+  );
+}
+
+export function DiningView({ halls }: { halls: DiningHallToday[] }) {
+  if (halls.length === 0) return <p className="text-sm text-zinc-500">No dining halls to show.</p>;
+  return (
+    <div className="space-y-3">
+      {halls.map((h) => <DiningHallCard key={h.hall.id} hall={h} />)}
+    </div>
+  );
+}
+
+export function DiningRecommendations({ recs }: { recs: DiningRecommendation[] }) {
+  if (recs.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      {recs.map((r) => (
+        <Card key={r.hallId} className="!p-3">
+          <p className="font-semibold">{r.hallName}</p>
+          {r.why && <p className="mt-0.5 text-xs text-zinc-500">{r.why}</p>}
+          <ul className="mt-1.5 flex flex-wrap gap-1">
+            {r.items.map((it) => <li key={it}><Pill tone="red">{it}</Pill></li>)}
+          </ul>
         </Card>
       ))}
     </div>
