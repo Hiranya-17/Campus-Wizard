@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
+import { GmailImport } from "@/components/GmailImport";
+import { CalendarExport } from "@/components/CalendarExport";
 import { WeekView } from "@/components/views";
 import { ApiError, postSemesterPlan, postWeekPlan } from "@/lib/api";
 import { DEFAULT_PREFS } from "@/lib/demo";
@@ -194,9 +196,21 @@ export default function WeekPage() {
       {error && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       <Button onClick={build} disabled={loading}>{loading ? "Planning…" : "Plan my week"}</Button>
 
+      <GmailImport
+        mode="events"
+        onSaveEvents={(evts) => update({ clubs: [...(profile.clubs ?? []), ...evts] })}
+      />
+
       {plan && (
         <>
           <WeekView plan={plan} />
+          {/* CalendarExport renders only when Google is connected; shows a
+              preview + confirm flow before exporting. The onClose link inside
+              it lets the user fall back to .ics if they prefer. */}
+          <CalendarExport
+            weekOf={plan.weekOf}
+            events={plan.events}
+          />
           <Button variant="secondary" onClick={downloadIcs}>Add to Google / Apple Calendar (.ics)</Button>
         </>
       )}

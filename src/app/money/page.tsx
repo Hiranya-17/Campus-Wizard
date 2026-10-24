@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useRef, useState } from "react";
 import { BudgetView, CATEGORY_LABEL } from "@/components/BudgetView";
+import { GmailImport } from "@/components/GmailImport";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
 import { summarize } from "@/lib/budget";
 import { DEFAULT_BUDGET } from "@/lib/demo";
@@ -188,6 +189,8 @@ function Budget() {
           </ul>
         )}
       </Card>
+
+      <GmailImport mode="expenses" onSaveExpenses={(exps) => add(exps)} />
 
       <Card className="space-y-2">
         <p className="text-sm font-semibold">Add by hand</p>

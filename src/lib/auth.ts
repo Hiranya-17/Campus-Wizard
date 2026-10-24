@@ -7,8 +7,10 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  passwordHash: string; // "salt:hash", scrypt
+  passwordHash: string; // "salt:hash", scrypt — empty string for Google-only accounts
   createdAt: string;
+  /** Google's stable sub identifier; present only on Google-authenticated accounts. */
+  googleId?: string;
 }
 export type PublicUser = Pick<User, "id" | "email" | "name">;
 
@@ -33,7 +35,10 @@ export function hashPassword(password: string): string {
 }
 
 export function checkPassword(password: string, stored: string): boolean {
+  // Google-only accounts have passwordHash = ""; reject password attempts on them.
+  if (!stored || !stored.includes(":")) return false;
   const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
   const test = crypto.scryptSync(password, salt, 64);
   return crypto.timingSafeEqual(test, Buffer.from(hash, "hex"));
 }
@@ -53,6 +58,33 @@ export async function createUser(email: string, name: string, password: string):
     email: email.trim().toLowerCase(),
     name: name.trim(),
     passwordHash: hashPassword(password),
+    createdAt: new Date().toISOString(),
+  };
+  await setJSON(userKey(user.email), user);
+  return user;
+}
+
+/**
+ * Find or create a user from a Google OAuth callback.
+ * - If an account with this email already exists, attaches the Google ID and returns it.
+ * - If no account exists, creates a new one (passwordHash = "" for Google-only accounts).
+ */
+export async function upsertGoogleUser(googleId: string, email: string, name: string): Promise<User> {
+  const existing = await findUser(email);
+  if (existing) {
+    if (existing.googleId !== googleId) {
+      const updated = { ...existing, googleId };
+      await setJSON(userKey(updated.email), updated);
+      return updated;
+    }
+    return existing;
+  }
+  const user: User = {
+    id: crypto.randomUUID(),
+    email: email.trim().toLowerCase(),
+    name: name.trim(),
+    passwordHash: "", // Google-only accounts have no password
+    googleId,
     createdAt: new Date().toISOString(),
   };
   await setJSON(userKey(user.email), user);
