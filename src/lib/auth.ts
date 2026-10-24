@@ -35,7 +35,10 @@ export function hashPassword(password: string): string {
 }
 
 export function checkPassword(password: string, stored: string): boolean {
+  // Google-only accounts have passwordHash = ""; reject password attempts on them.
+  if (!stored || !stored.includes(":")) return false;
   const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
   const test = crypto.scryptSync(password, salt, 64);
   return crypto.timingSafeEqual(test, Buffer.from(hash, "hex"));
 }
