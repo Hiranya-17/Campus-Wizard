@@ -3,6 +3,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BudgetView, CATEGORY_LABEL } from "@/components/BudgetView";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
+import { GmailImport } from "@/components/GmailImport";
 import { FoodView } from "@/components/views";
 import { summarize } from "@/lib/budget";
 import { DEFAULT_BUDGET } from "@/lib/demo";
@@ -71,6 +72,11 @@ function Budget() {
           </ul>
         )}
       </Card>
+
+      <GmailImport
+        mode="expenses"
+        onSaveExpenses={(exps) => add(exps)}
+      />
 
       <Card className="space-y-2">
         <p className="text-sm font-semibold">Add by hand</p>

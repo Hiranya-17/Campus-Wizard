@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
+import { GmailImport } from "@/components/GmailImport";
 import { WeekView } from "@/components/views";
 import { DEFAULT_PREFS } from "@/lib/demo";
 import { fmtTime, fromInputTime, toInputTime } from "@/lib/format";
@@ -164,6 +165,11 @@ export default function WeekPage() {
       </Card>
 
       <Button onClick={build} disabled={loading}>{loading ? "Planning…" : "Plan my week"}</Button>
+
+      <GmailImport
+        mode="events"
+        onSaveEvents={(evts) => update({ clubs: [...(profile.clubs ?? []), ...evts] })}
+      />
 
       {plan && (
         <>
