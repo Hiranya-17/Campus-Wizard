@@ -178,6 +178,35 @@ export interface FoodComparison {
   conveniencePointsApps: DeliveryApp[];
 }
 
+// ---------- budget ----------
+
+export const CATEGORIES = ["food", "transport", "textbooks", "entertainment", "daily"] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+export interface Expense {
+  id: string;
+  date: string; // "2026-10-24"
+  amount: number; // dollars
+  merchant: string;
+  category: Category;
+  paidWith: "card" | "dining points" | "convenience points" | "cash";
+  source: "manual" | "receipt" | "email" | "food-compare" | "chat";
+  note?: string;
+}
+
+export interface Budget {
+  semesterStart: string; // "2026-09-02"
+  semesterEnd: string; // "2026-12-19"
+  limits: Record<Category, number>; // dollars for the whole semester
+}
+
+// POST /api/expenses/extract  { text?, imageBase64?, mimeType? } -> { expenses: Expense[], engine }
+export interface ExpenseExtractRequest {
+  text?: string;
+  imageBase64?: string;
+  mimeType?: string; // "image/jpeg"
+}
+
 // ---------- the single demo user (kept in the browser, sent with each chat) ----------
 
 export interface Profile {
@@ -190,6 +219,8 @@ export interface Profile {
   clubs?: WeekEvent[]; // club meetings, from Gmail or typed in
   semester?: SemesterPlanResponse; // last accepted semester plan
   home?: string; // building code where the day starts, e.g. "WARREN"
+  expenses?: Expense[];
+  budget?: Budget;
 }
 
 // ---------- POST /api/chat ----------
@@ -209,7 +240,16 @@ export type ChatCard =
   | { kind: "semester"; data: SemesterPlanResponse }
   | { kind: "week"; data: WeekPlanResponse }
   | { kind: "food"; data: FoodComparison[] }
-  | { kind: "course"; data: Course };
+  | { kind: "course"; data: Course }
+  | { kind: "expense"; data: Expense } // the chat screen saves these to the profile
+  | { kind: "budget"; data: BudgetSummary };
+
+export interface BudgetSummary {
+  daysElapsed: number;
+  daysTotal: number;
+  categories: { category: Category; spent: number; limit: number; projected: number }[];
+  total: { spent: number; limit: number; projected: number };
+}
 
 export interface ChatResponse {
   reply: string;

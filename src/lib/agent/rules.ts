@@ -20,6 +20,23 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     return { reply: `${full}: ${r.title}. ${verdict}`, cards: card ? [card] : [] };
   }
 
+  const spent = text.match(/(?:spent|paid|log(?:ged)?)\s+\$?(\d+(?:\.\d{1,2})?)\s+(?:at|on|for)\s+(.+)/i);
+  if (spent) {
+    const merchant = spent[2].replace(/[.!?]+$/, "");
+    const category = /uber(?! ?eats)|lyft|mbta|train|bus/i.test(merchant) ? "transport" : /book/i.test(merchant) ? "textbooks" : /movie|ticket|concert|game/i.test(merchant) ? "entertainment" : /cvs|target|laundry|walgreens/i.test(merchant) ? "daily" : "food";
+    const { card } = await runTool("log_expense", { amount: Number(spent[1]), merchant, category }, profile);
+    return { reply: `Logged $${Number(spent[1]).toFixed(2)} at ${merchant} under ${category}.`, cards: card ? [card] : [] };
+  }
+
+  if (/budget|spent|spending|how much/.test(t)) {
+    const { result, card } = await runTool("budget_summary", {}, profile);
+    const r = result as { total: { spent: number; limit: number; projected: number } };
+    return {
+      reply: `You've spent $${r.total.spent.toFixed(2)} of $${r.total.limit.toFixed(0)} this semester. At this pace you'll hit $${r.total.projected.toFixed(0)} by finals.`,
+      cards: card ? [card] : [],
+    };
+  }
+
   if (/leave|get to|commute|late|bus|train|\bt\b|green line|walk/.test(t)) {
     const { result } = await runTool("route_day", {}, profile);
     const r = result as { day: string; message?: string; legs?: { to: string; toPlace: string; leaveBy: string; mode: string; walkMinutes: number; transit?: { board: string } }[] };

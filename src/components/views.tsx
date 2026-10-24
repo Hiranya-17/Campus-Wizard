@@ -145,7 +145,7 @@ export function EventRow({ e }: { e: WeekEvent }) {
 
 // ---------- food ----------
 
-export function FoodView({ data }: { data: FoodComparison[] }) {
+export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: (r: FoodComparison) => void }) {
   return (
     <div className="space-y-3">
       {data.map((r) => (
@@ -170,6 +170,11 @@ export function FoodView({ data }: { data: FoodComparison[] }) {
               </li>
             ))}
           </ul>
+          {onOrder && (
+            <button onClick={() => onOrder(r)} className="mt-2 w-full rounded-lg border border-zinc-200 py-1.5 text-xs font-semibold text-bu">
+              I ordered on {r.cheapest}: log {money(r.quotes[0].total)}
+            </button>
+          )}
         </Card>
       ))}
     </div>

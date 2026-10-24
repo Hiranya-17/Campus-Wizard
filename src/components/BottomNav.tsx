@@ -8,13 +8,14 @@ const ICONS: Record<string, React.ReactNode> = {
   week: <path d="M4 5h16v15H4zM4 10h16M8 3v4M16 3v4" />,
   food: <path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5M9 3v5M17 3c-2 0-3 3-3 6s1 4 3 4v8" />,
   chat: <path d="M4 5h16v11H9l-5 4z" />,
+  money: <path d="M3 6h18v12H3zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M6 9v6M18 9v6" />,
 };
 
 const TABS = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/plan", label: "Plan", icon: "plan" },
   { href: "/week", label: "Week", icon: "week" },
-  { href: "/food", label: "Food", icon: "food" },
+  { href: "/money", label: "Money", icon: "money" },
   { href: "/chat", label: "Rhett", icon: "chat" },
 ];
 

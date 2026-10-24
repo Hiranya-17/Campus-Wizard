@@ -1,13 +1,15 @@
 "use client";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { BudgetView, CATEGORY_LABEL } from "@/components/BudgetView";
 import { CourseView, FoodView, SemesterView, WeekView } from "@/components/views";
+import { money } from "@/lib/format";
 import { useProfile } from "@/lib/profile";
 import type { ChatCard, ChatMessage, ChatResponse } from "@/lib/types";
 
 type Turn = ChatMessage & { cards?: ChatCard[] };
 
-const SUGGESTIONS = ["Plan my spring semester", "Plan my week", "Can I take EC 413?", "Cheapest place to order pizza?"];
+const SUGGESTIONS = ["When should I leave for class?", "Plan my spring semester", "Plan my week", "How's my budget?", "Can I take EC 413?", "Cheapest pizza?"];
 
 function Cards({ cards }: { cards: ChatCard[] }) {
   return (
@@ -16,6 +18,12 @@ function Cards({ cards }: { cards: ChatCard[] }) {
         c.kind === "semester" ? <SemesterView key={i} plan={c.data} />
         : c.kind === "week" ? <WeekView key={i} plan={c.data} />
         : c.kind === "food" ? <FoodView key={i} data={c.data} />
+        : c.kind === "budget" ? <BudgetView key={i} summary={c.data} />
+        : c.kind === "expense" ? (
+          <p key={i} className="rounded-xl bg-green-50 px-3 py-2 text-xs text-green-700">
+            ✓ Logged {money(c.data.amount)} at {c.data.merchant} ({CATEGORY_LABEL[c.data.category]})
+          </p>
+        )
         : <CourseView key={i} course={c.data} />,
       )}
     </div>
@@ -47,6 +55,8 @@ function Chat() {
       setTurns([...next, { role: "assistant", content: data.reply, cards: data.cards }]);
       const sem = data.cards?.find((c) => c.kind === "semester");
       if (sem && sem.kind === "semester" && !profile.semester) update({ semester: sem.data });
+      const logged = (data.cards ?? []).flatMap((c) => (c.kind === "expense" ? [c.data] : []));
+      if (logged.length) update({ expenses: [...logged, ...(profile.expenses ?? [])] });
     } catch {
       setTurns([...next, { role: "assistant", content: "I couldn't reach the server. Try again?" }]);
     }

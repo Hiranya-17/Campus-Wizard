@@ -20,7 +20,7 @@ Without a key the chat still works using keyword rules ("plan my semester", "pla
 | --- | --- | --- |
 | A (Claude Code) | Course data, planners, agent backend | `scripts/`, `data/`, `src/lib/`, `src/app/api/` |
 | B (Kiro) | Polish screens: Home, Plan, Week, Food, Chat (first versions built) | `src/app/*/page.tsx`, `src/components/` |
-| C (Kiro) | Google sign-in, Gmail, Calendar, food page, transit | `src/app/food/`, `src/lib/google/`, `src/app/api/transit/` |
+| C (Kiro) | Google sign-in, Gmail (feeds `/api/extract-events` and `/api/expenses/extract`), Google Calendar | `src/lib/google/`, `src/app/api/google/` |
 | D | Food dataset, research, pitch, Devpost | `data/food.json` (via C), `docs/` |
 
 Work on a branch, open a PR, keep `main` deployable.
@@ -39,6 +39,8 @@ All shapes live in [`src/lib/types.ts`](src/lib/types.ts). Example data is in [`
 | `POST /api/chat` | `ChatResponse` (`reply` + `cards` to render) | live: Gemini if `GEMINI_API_KEY` is set, keyword rules otherwise |
 | `POST /api/extract-events` | `ExtractResponse` from a club email or syllabus (text or PDF) | live: Gemini or rules |
 | `GET /api/food` | `FoodQuote[]` | sample data until `data/food.json` exists |
+| `POST /api/transit` | leave-by times per class: walk vs Green Line (live MBTA), NWS weather | live |
+| `POST /api/expenses/extract` | `Expense[]` from a receipt photo or order email | live: Gemini or rules |
 | `data/courses.json` | `Course[]` (all BU courses, prereqs, Fall 2026 / Spring 2027 sections) | scraping |
 | `data/majors/<id>.json` | `Major` (program planning sheet) | CE first |
 

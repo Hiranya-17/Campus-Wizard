@@ -1,8 +1,8 @@
 import "server-only";
+import { geminiGenerate } from "@/lib/agent/geminiFetch";
 import type { Day, ExtractRequest, ExtractedEvent } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
 
 const SCHEMA = {
   type: "array",
@@ -31,21 +31,11 @@ export async function extractWithGemini(req: ExtractRequest): Promise<ExtractedE
   if (req.text) parts.push({ text: req.text.slice(0, 60000) });
   if (req.pdfBase64) parts.push({ inlineData: { mimeType: "application/pdf", data: req.pdfBase64 } });
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(25000), // fall back to rules rather than hang the demo
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA },
-      }),
-    },
-  );
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const data = await res.json();
-  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
+  const data = await geminiGenerate({
+    contents: [{ role: "user", parts }],
+    generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA },
+  });
+  const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text as string) ?? "[]";
   return (JSON.parse(raw) as Partial<ExtractedEvent>[]).map((e) => ({
     title: e.title ?? "Event",
     kind: e.kind ?? "club",

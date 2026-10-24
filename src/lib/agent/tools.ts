@@ -3,10 +3,11 @@ import { getCourses, getFood, getMajor, listMajors } from "@/lib/data";
 import { compareFood } from "@/lib/food";
 import { missingGroups, planSemester } from "@/lib/planner/semester";
 import { classEvents, planWeek } from "@/lib/planner/week";
-import { DEFAULT_PREFS } from "@/lib/demo";
+import { summarize } from "@/lib/budget";
+import { DEFAULT_BUDGET, DEFAULT_PREFS } from "@/lib/demo";
 import { fmtTime } from "@/lib/format";
 import { planRoute } from "@/lib/transit";
-import type { ChatCard, Day, Profile, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
+import type { Category, ChatCard, Day, Expense, Profile, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
 /** Monday of next week as YYYY-MM-DD. */
@@ -81,6 +82,25 @@ export const TOOL_DECLARATIONS = [
         day: { type: "string", enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], description: "Defaults to today" },
         from: { type: "string", description: "Building code to start from, e.g. WARREN, WEST, STUVI, MYLES" },
       },
+    },
+  },
+  {
+    name: "budget_summary",
+    description: "The student's spending this semester by category (food, transport, textbooks, entertainment, daily) versus their budget, and the projected total by the end of the semester at the current pace.",
+    parameters: { type: "object", properties: {} },
+  },
+  {
+    name: "log_expense",
+    description: "Record a purchase in the student's budget, e.g. when they say they spent money.",
+    parameters: {
+      type: "object",
+      properties: {
+        amount: { type: "number" },
+        merchant: { type: "string" },
+        category: { type: "string", enum: ["food", "transport", "textbooks", "entertainment", "daily"] },
+        paidWith: { type: "string", enum: ["card", "dining points", "convenience points", "cash"] },
+      },
+      required: ["amount", "merchant", "category"],
     },
   },
   {
@@ -185,6 +205,22 @@ export async function runTool(name: string, args: Args, profile: Profile): Promi
     case "compare_food": {
       const data = compareFood(getFood(), args.restaurant ? String(args.restaurant) : undefined);
       return { result: data, card: { kind: "food", data } };
+    }
+    case "budget_summary": {
+      const summary = summarize(profile.expenses ?? [], profile.budget ?? DEFAULT_BUDGET);
+      return { result: summary, card: { kind: "budget", data: summary } };
+    }
+    case "log_expense": {
+      const expense: Expense = {
+        id: `c${Date.now().toString(36)}`,
+        date: new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }),
+        amount: Math.round(Number(args.amount) * 100) / 100,
+        merchant: String(args.merchant ?? "Purchase"),
+        category: (args.category as Category) ?? "daily",
+        paidWith: (args.paidWith as Expense["paidWith"]) ?? "card",
+        source: "chat",
+      };
+      return { result: { logged: expense }, card: { kind: "expense", data: expense } };
     }
     case "list_majors":
       return { result: listMajors() };
