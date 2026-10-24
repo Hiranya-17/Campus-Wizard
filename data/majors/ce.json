@@ -198,7 +198,6 @@
         "CAS CH 101",
         "CAS CH 131",
         "CAS PY 313",
-        "CAS PY 314",
         "CAS PY 451"
       ]
     },
@@ -254,7 +253,6 @@
         "CAS CS 320",
         "CAS CS 350",
         "CAS CS 410",
-        "CAS CS 411",
         "CAS CS 505",
         "CAS CS 511",
         "CAS CS 525",
@@ -263,7 +261,6 @@
         "CAS CS 538",
         "CAS CS 548",
         "CAS CS 552",
-        "CAS CS 558",
         "CAS CS 562",
         "CAS CS 565"
       ]
@@ -308,7 +305,6 @@
         "CAS CS 320",
         "CAS CS 350",
         "CAS CS 410",
-        "CAS CS 411",
         "CAS CS 505",
         "CAS CS 511",
         "CAS CS 525",
@@ -317,7 +313,6 @@
         "CAS CS 538",
         "CAS CS 548",
         "CAS CS 552",
-        "CAS CS 558",
         "CAS CS 562",
         "CAS CS 565",
         "ENG BE 209",
@@ -326,18 +321,15 @@
         "CAS CS 480",
         "CAS CS 585",
         "CAS MA 511",
-        "CAS MA 528",
         "CAS MA 531",
         "CAS MA 541",
         "CAS MA 583",
         "CAS PY 313",
-        "CAS PY 314",
         "CAS PY 451",
         "CAS PY 452",
         "CDS DS 310",
         "CDS DS 340",
-        "CDS DS 453",
-        "CDS DS 563"
+        "CDS DS 453"
       ],
       "rule": "Any ENG EC, BE, EK or ME course at the 300-level or above (not 600-level) also counts. At most 4 units of EC 451; at most two of QST SI 480, QST SI 482, HUB XC 433, HUB XC 438."
     }
@@ -355,6 +347,7 @@
   "notes": [
     "Students planning to study abroad sophomore 2 should take EK 301 in sophomore 1.",
     "48 units of upper-division program coursework required (not including Hub or writing).",
-    "Only one of each overlapping set counts: EK 103 / MA 242 / MA 442; EK 381 / MA 581; BE 403 / EC 401; PY 313 / PY 314 / PY 321 & 322."
+    "Only one of each overlapping set counts: EK 103 / MA 242 / MA 442; EK 381 / MA 581; BE 403 / EC 401; PY 313 / PY 314 / PY 321 & 322.",
+    "On the 2025 planning sheet but not in BU's current catalog (removed from the elective lists): CAS PY 314, CAS CS 411, CAS CS 558, CAS MA 528, CDS DS 563."
   ]
 }
