@@ -10,13 +10,14 @@ import { DAYS } from "@/lib/types";
 export interface CalendarEventResult {
   eventId: string;       // WeekEvent.id
   title: string;
-  status: "created" | "skipped" | "failed";
-  googleId?: string;     // Google Calendar event id, present on "created"
+  status: "created" | "restored" | "skipped" | "failed";
+  googleId?: string;     // Google Calendar event id, present on "created"/"restored"
   error?: string;        // present on "failed"
 }
 
 export interface ExportResult {
   created: number;
+  restored: number;
   skipped: number;
   failed: CalendarEventResult[];
   results: CalendarEventResult[];
@@ -84,6 +85,7 @@ interface CalendarListResponse {
 interface CalendarEvent {
   id?: string;
   iCalUID?: string;
+  status?: "confirmed" | "tentative" | "cancelled";
 }
 
 interface CalendarEventsListResponse {
@@ -117,15 +119,70 @@ async function calFetch(
 }
 
 /**
- * Check if an event with this iCalUID already exists in the primary calendar.
- * Returns the Google event id if found, null otherwise.
+ * Look up an event by iCalUID, including cancelled (soft-deleted) events.
+ *
+ * Google Calendar never truly removes events — delete sets status:"cancelled"
+ * and the iCalUID stays reserved. Without showDeleted=true the query returns
+ * an empty list for cancelled events, causing a false-negative that leads to a
+ * 409 on the subsequent insert.
+ *
+ * Returns:
+ *   null              – no record at all (safe to insert fresh)
+ *   { id, status:"confirmed" | "tentative" }  – active event (skip)
+ *   { id, status:"cancelled" }                – soft-deleted (needs restore)
  */
-async function findByICalUID(userId: string, uid: string): Promise<string | null> {
+async function findByICalUID(
+  userId: string,
+  uid: string,
+): Promise<{ id: string; status: CalendarEvent["status"] } | null> {
   const data = (await calFetch(
     userId,
-    `/calendars/primary/events?iCalUID=${encodeURIComponent(uid)}&fields=items(id,iCalUID)`,
+    `/calendars/primary/events?iCalUID=${encodeURIComponent(uid)}&showDeleted=true&fields=items(id,iCalUID,status)`,
   )) as CalendarEventsListResponse | null;
-  return data?.items?.[0]?.id ?? null;
+  const item = data?.items?.[0];
+  if (!item?.id) return null;
+  return { id: item.id, status: item.status ?? "confirmed" };
+}
+
+/**
+ * Restore a soft-deleted (status:"cancelled") calendar event by PUTting it
+ * back with status:"confirmed" and refreshed event data.
+ *
+ * This is the correct approach documented by the Calendar API — you cannot
+ * re-insert with the same iCalUID (409), but you can UPDATE the cancelled
+ * record to bring it back.
+ */
+async function restoreEvent(
+  userId: string,
+  googleId: string,
+  event: WeekEvent,
+  weekOf: string,
+): Promise<string> {
+  const uid = iCalUID(event, weekOf);
+  const start = toRfc3339(weekOf, event.day, event.start);
+  const end = toRfc3339(weekOf, event.day, Math.min(event.end, 1439));
+
+  const body = {
+    iCalUID: uid,
+    status: "confirmed",
+    summary: event.title,
+    ...(event.location ? { location: event.location } : {}),
+    start: { dateTime: start, timeZone: TZ },
+    end: { dateTime: end, timeZone: TZ },
+    reminders: {
+      useDefault: false,
+      overrides: [{ method: "popup", minutes: 10 }],
+    },
+  };
+
+  const updated = (await calFetch(
+    userId,
+    `/calendars/primary/events/${encodeURIComponent(googleId)}`,
+    { method: "PUT", body },
+  )) as CalendarEvent;
+
+  if (!updated?.id) throw new Error("Calendar API returned no event id on restore");
+  return updated.id;
 }
 
 /**
@@ -169,37 +226,48 @@ async function insertEvent(
 /**
  * Export a week plan to the user's primary Google Calendar.
  *
- * - Skips "sleep" events (same as the .ics export).
- * - Checks for existing events by iCalUID before inserting — safe to call
- *   repeatedly; already-exported events are counted as "skipped".
- * - Returns per-event results so the caller can report partial failures.
+ * Handles three cases per event:
+ *   1. No record found         → insert fresh (status: "created")
+ *   2. Active confirmed event  → skip, already present (status: "skipped")
+ *   3. Soft-deleted cancelled  → restore via PUT with status:"confirmed"
+ *                                (status: "restored")
+ *
+ * This prevents both the 409 error on deleted events and false duplicates
+ * on repeated exports of active events. Sleep events are excluded, matching
+ * the .ics export policy.
  */
 export async function exportWeekToCalendar(
   userId: string,
   weekOf: string,
   events: WeekEvent[],
 ): Promise<ExportResult> {
-  // Verify the token is reachable before iterating
   const token = await getValidAccessToken(userId);
-  if (!token) {
-    throw new Error("No valid Google token. Please reconnect Google.");
-  }
+  if (!token) throw new Error("No valid Google token. Please reconnect Google.");
 
-  // Filter out sleep events — same policy as .ics
   const exportable = events.filter((e) => e.kind !== "sleep");
-
   const results: CalendarEventResult[] = [];
 
   for (const event of exportable) {
     const uid = iCalUID(event, weekOf);
     try {
-      const existingId = await findByICalUID(userId, uid);
-      if (existingId) {
-        results.push({ eventId: event.id, title: event.title, status: "skipped", googleId: existingId });
+      const existing = await findByICalUID(userId, uid);
+
+      if (!existing) {
+        // Case 1: No record — safe to insert fresh
+        const googleId = await insertEvent(userId, event, weekOf);
+        results.push({ eventId: event.id, title: event.title, status: "created", googleId });
         continue;
       }
-      const googleId = await insertEvent(userId, event, weekOf);
-      results.push({ eventId: event.id, title: event.title, status: "created", googleId });
+
+      if (existing.status === "cancelled") {
+        // Case 3: Soft-deleted — restore by updating the cancelled record
+        const googleId = await restoreEvent(userId, existing.id, event, weekOf);
+        results.push({ eventId: event.id, title: event.title, status: "restored", googleId });
+        continue;
+      }
+
+      // Case 2: Active event — already in calendar, nothing to do
+      results.push({ eventId: event.id, title: event.title, status: "skipped", googleId: existing.id });
     } catch (err) {
       const error = err instanceof Error ? err.message : "Unknown error";
       results.push({ eventId: event.id, title: event.title, status: "failed", error });
@@ -208,6 +276,7 @@ export async function exportWeekToCalendar(
 
   return {
     created: results.filter((r) => r.status === "created").length,
+    restored: results.filter((r) => r.status === "restored").length,
     skipped: results.filter((r) => r.status === "skipped").length,
     failed: results.filter((r) => r.status === "failed"),
     results,

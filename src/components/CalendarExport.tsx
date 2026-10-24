@@ -11,13 +11,14 @@ import type { WeekEvent } from "@/lib/types";
 interface EventResult {
   eventId: string;
   title: string;
-  status: "created" | "skipped" | "failed";
+  status: "created" | "restored" | "skipped" | "failed";
   googleId?: string;
   error?: string;
 }
 
 interface ExportResult {
   created: number;
+  restored: number;
   skipped: number;
   failed: EventResult[];
   results: EventResult[];
@@ -249,15 +250,23 @@ export function CalendarExport({ weekOf, events, onClose }: CalendarExportProps)
 
   // ---- done phase ----
   if (phase === "done" && result) {
-    const allSkipped = result.created === 0 && result.skipped === exportable.length && result.failed.length === 0;
-    const allCreated = result.created === exportable.length && result.failed.length === 0;
+    const addedCount = result.created + result.restored;
+    const allSkipped = addedCount === 0 && result.skipped === exportable.length && result.failed.length === 0;
+    const allAdded = addedCount === exportable.length && result.failed.length === 0;
 
     return (
       <Card className="space-y-3">
         {/* Summary banner */}
-        {allCreated && (
+        {allAdded && result.restored === 0 && (
           <p className="rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
             ✓ All {result.created} events added to Google Calendar.
+          </p>
+        )}
+        {allAdded && result.restored > 0 && (
+          <p className="rounded-xl bg-green-50 px-3 py-2 text-sm font-semibold text-green-800">
+            ✓ {result.created > 0 ? `${result.created} added` : ""}
+            {result.created > 0 && result.restored > 0 ? " · " : ""}
+            {result.restored > 0 ? `${result.restored} restored` : ""}
           </p>
         )}
         {allSkipped && (
@@ -265,13 +274,15 @@ export function CalendarExport({ weekOf, events, onClose }: CalendarExportProps)
             All events were already in your calendar — nothing to add.
           </p>
         )}
-        {!allCreated && !allSkipped && (
+        {!allAdded && !allSkipped && (
           <div className="rounded-xl bg-amber-50 px-3 py-2 text-sm">
             <p className="font-semibold text-amber-800">
-              {result.created > 0 && `${result.created} added`}
-              {result.created > 0 && result.skipped > 0 && " · "}
-              {result.skipped > 0 && `${result.skipped} already existed`}
-              {result.failed.length > 0 && ` · ${result.failed.length} failed`}
+              {[
+                result.created > 0 && `${result.created} added`,
+                result.restored > 0 && `${result.restored} restored`,
+                result.skipped > 0 && `${result.skipped} already existed`,
+                result.failed.length > 0 && `${result.failed.length} failed`,
+              ].filter(Boolean).join(" · ")}
             </p>
           </div>
         )}
@@ -281,12 +292,15 @@ export function CalendarExport({ weekOf, events, onClose }: CalendarExportProps)
           {result.results.map((r) => (
             <li key={r.eventId} className="flex items-start gap-2 text-xs">
               <span className="mt-0.5 shrink-0">
-                {r.status === "created" && <span className="text-green-600">✓</span>}
+                {(r.status === "created" || r.status === "restored") && <span className="text-green-600">✓</span>}
                 {r.status === "skipped" && <span className="text-zinc-400">–</span>}
                 {r.status === "failed" && <span className="text-red-600">✗</span>}
               </span>
               <span className={`flex-1 ${r.status === "failed" ? "text-red-700" : r.status === "skipped" ? "text-zinc-400" : "text-zinc-700"}`}>
                 {r.title}
+                {r.status === "restored" && (
+                  <span className="ml-1 text-zinc-400">(was deleted — restored)</span>
+                )}
                 {r.status === "failed" && r.error && (
                   <span className="ml-1 text-red-500">({r.error})</span>
                 )}
@@ -294,14 +308,14 @@ export function CalendarExport({ weekOf, events, onClose }: CalendarExportProps)
                   <span className="ml-1 text-zinc-400">(already in calendar)</span>
                 )}
               </span>
-              <Pill tone={r.status === "created" ? "green" : r.status === "failed" ? "red" : "zinc"}>
+              <Pill tone={r.status === "created" || r.status === "restored" ? "green" : r.status === "failed" ? "red" : "zinc"}>
                 {r.status}
               </Pill>
             </li>
           ))}
         </ul>
 
-        {/* Failed events: offer to retry just those */}
+        {/* Failed events: offer to retry */}
         {result.failed.length > 0 && (
           <button
             onClick={() => dispatch({ type: "RESET" })}
