@@ -50,3 +50,8 @@ export const DEMO_PROFILE: Profile = {
     { id: "club-robotics", title: "BU Robotics Club", day: "Tue", start: 1140, end: 1230, kind: "club", location: "PHO 117", fixed: true },
   ],
 };
+
+/** A brand-new account: no demo courses, clubs or spending. */
+export function starterProfile(p: Pick<Profile, "name" | "majorId" | "standing" | "home">): Profile {
+  return { ...p, term: "Spring 2027", completed: [], prefs: DEFAULT_PREFS, budget: DEFAULT_BUDGET, expenses: [], clubs: [] };
+}

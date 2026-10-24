@@ -42,3 +42,6 @@ next-env.d.ts
 
 # scraper page cache
 /scripts/.cache/
+
+# local account store (used when Upstash Redis is not configured)
+/data/.local-db.json
