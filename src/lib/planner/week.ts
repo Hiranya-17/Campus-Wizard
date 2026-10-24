@@ -75,8 +75,18 @@ export function planWeek(req: WeekPlanRequest): WeekPlanResponse {
     }
   }
 
-  // Study blocks of up to 90 minutes, rotating through the week's classes.
-  const subjects = [...new Set(req.fixed.filter((e) => e.kind === "class").map((e) => e.title.split(" ").slice(0, 2).join(" ")))];
+  // Study blocks of up to 90 minutes, rotating through the week's classes. Courses with exams or
+  // deadlines coming up (req.focus) get extra turns, most urgent first, and say what they're for.
+  const classSubjects = [...new Set(req.fixed.filter((e) => e.kind === "class").map((e) => e.title.split(" ").slice(0, 2).join(" ")))];
+  const focus = req.focus ?? [];
+  const top = focus[0]?.weight ?? 0;
+  const subjects: string[] = [];
+  for (const f of focus) subjects.push(...Array(Math.max(1, Math.round((f.weight / Math.max(top, 1)) * 3))).fill(f.subject));
+  for (const c of classSubjects) if (!focus.some((f) => f.subject === c)) subjects.push(c);
+  const titleFor = (subject: string) => {
+    const f = focus.find((x) => x.subject === subject);
+    return f ? `Study for ${f.label}` : `Study: ${subject}`;
+  };
   let s = 0;
   for (const day of DAYS) {
     const weekend = day === "Sat" || day === "Sun";
@@ -84,7 +94,7 @@ export function planWeek(req: WeekPlanRequest): WeekPlanResponse {
     while (left >= 30) {
       const len = Math.min(90, left);
       const subject = subjects.length ? subjects[s++ % subjects.length] : "";
-      if (!place(day, len, 540, bed - 30, `Study${subject ? `: ${subject}` : ""}`, "study")) {
+      if (!place(day, len, 540, bed - 30, subject ? titleFor(subject) : "Study", "study")) {
         unscheduled.push(`${Math.round(left / 6) / 10}h study ${day}`);
         break;
       }

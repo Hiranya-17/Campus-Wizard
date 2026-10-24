@@ -4,6 +4,7 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { CourseHistoryPicker } from "@/components/CourseHistoryPicker";
 import { courseColor, ScheduleCalendar } from "@/components/ScheduleCalendar";
 import { missingPrereqs, SectionPicker } from "@/components/SectionPicker";
+import { SyllabusCard } from "@/components/SyllabusCard";
 import { Card, Pill } from "@/components/ui";
 import { useProfile } from "@/lib/profile";
 import { conflicts, emptySchedule, shortCode, withCourse, withoutCourse } from "@/lib/schedule";
@@ -191,6 +192,8 @@ export default function PlanPage() {
           })}
         </ul>
       )}
+
+      <SyllabusCard profile={profile} update={update} />
 
       <Card className="!p-3">
         <button onClick={() => setHistory(!history)} className="flex w-full items-center justify-between text-sm font-semibold">

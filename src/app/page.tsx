@@ -3,11 +3,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RouteCard } from "@/components/RouteCard";
+import { StudyCard } from "@/components/StudyCard";
 import { Card } from "@/components/ui";
 import { EventRow } from "@/components/views";
 import { postSemesterPlan, postWeekPlan } from "@/lib/api";
 import { DEFAULT_PREFS } from "@/lib/demo";
 import { classEvents } from "@/lib/planner/week";
+import { examEvents, mondayOf, studyFocus } from "@/lib/study";
 import { useProfile } from "@/lib/profile";
 import type { Day, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
 import { DAYS } from "@/lib/types";
@@ -36,9 +38,10 @@ export default function Home() {
           profile.semester ??
           (await postSemesterPlan({ majorId: profile.majorId, term: profile.term, standing: profile.standing, completed: profile.completed }));
         const plan: WeekPlanResponse = await postWeekPlan({
-          weekOf: "",
-          fixed: [...classEvents(semester.courses ?? []), ...(profile.clubs ?? [])],
+          weekOf: mondayOf(),
+          fixed: [...classEvents(semester.courses ?? []), ...(profile.clubs ?? []), ...examEvents(profile.assignments ?? [], mondayOf())],
           prefs: profile.prefs ?? DEFAULT_PREFS,
+          focus: studyFocus(profile.assignments ?? []),
         });
         setWeek(plan.events);
         setToday(plan.events.filter((e) => e.day === day && e.kind !== "sleep"));
@@ -63,6 +66,11 @@ export default function Home() {
         <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="Ask Rhett: “Can I take EC 413?”" aria-label="Ask Rhett a question" maxLength={500} className="min-w-0 flex-1 px-2 text-sm outline-none" />
         <button className="rounded-xl bg-bu px-4 py-2 text-sm font-semibold text-white">Ask</button>
       </form>
+
+      <section>
+        <h2 className="mb-2 font-semibold">What to study</h2>
+        <StudyCard assignments={profile.assignments ?? []} />
+      </section>
 
       <section>
         <h2 className="mb-2 font-semibold">Getting to class</h2>

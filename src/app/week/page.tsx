@@ -6,6 +6,7 @@ import { ApiError, postSemesterPlan, postWeekPlan } from "@/lib/api";
 import { DEFAULT_PREFS } from "@/lib/demo";
 import { fmtTime, fromInputTime, toInputTime } from "@/lib/format";
 import { classEvents } from "@/lib/planner/week";
+import { examEvents, studyFocus } from "@/lib/study";
 import { useProfile } from "@/lib/profile";
 import type { ExtractResponse, ExtractedEvent, WeekEvent, WeekPlanRequest, WeekPlanResponse, WeekPrefs } from "@/lib/types";
 
@@ -47,7 +48,13 @@ export default function WeekPage() {
     const semester =
       profile.semester ??
       (await postSemesterPlan({ majorId: profile.majorId, term: profile.term, standing: profile.standing, completed: profile.completed }));
-    return { weekOf: nextMonday(), fixed: [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? [])], prefs };
+    const weekOf = nextMonday();
+    return {
+      weekOf,
+      fixed: [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? []), ...examEvents(profile.assignments ?? [], weekOf)],
+      prefs,
+      focus: studyFocus(profile.assignments ?? [], new Date(`${weekOf}T08:00:00`)),
+    };
   };
 
   const build = async () => {

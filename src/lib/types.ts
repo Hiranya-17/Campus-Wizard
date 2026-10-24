@@ -117,6 +117,46 @@ export interface WeekPlanRequest {
   weekOf: string; // ISO date of the Monday, "2026-10-26"
   fixed: WeekEvent[]; // classes, club meetings, exams
   prefs: WeekPrefs;
+  /** Study emphasis from upcoming exams/deadlines: subject like "MA 226" -> weight; more weight, more study blocks. */
+  focus?: { subject: string; weight: number; label: string }[];
+}
+
+// ---------- syllabus: exams and homework (POST /api/syllabus) ----------
+
+export type AssignmentKind = "exam" | "quiz" | "homework" | "project" | "paper";
+
+export interface Assignment {
+  id: string;
+  courseCode: string; // "CAS MA 226"
+  title: string; // "Midterm 2", "HW 6"
+  kind: AssignmentKind;
+  date: string; // "2026-11-05"
+  time: Minutes | null; // exam start or due time; null = end of day
+  weight: number | null; // % of the final grade, if the syllabus says
+  topics: string[]; // what it covers
+  source: "syllabus" | "manual";
+}
+
+export interface SyllabusRequest {
+  courseCode: string;
+  text?: string;
+  pdfBase64?: string;
+}
+
+export interface SyllabusResponse {
+  courseCode: string;
+  items: Assignment[];
+  engine: "gemini" | "rules";
+  note?: string;
+}
+
+/** One line of "what to study" advice. */
+export interface StudyPriority {
+  assignment: Assignment;
+  daysLeft: number;
+  score: number;
+  suggestedHours: number;
+  advice: string; // "Review: Laplace transforms, systems of ODEs"
 }
 
 export interface WeekPlanResponse {
@@ -281,6 +321,7 @@ export interface Profile {
   completed: string[]; // courses finished BEFORE the term being planned
   prefs?: WeekPrefs;
   clubs?: WeekEvent[]; // club meetings, from Gmail or typed in
+  assignments?: Assignment[]; // exams and homework from uploaded syllabi
   semester?: SemesterPlanResponse; // the student's chosen classes and sections for `term`
   home?: string; // building code where the day starts, e.g. "WARREN"
   expenses?: Expense[];

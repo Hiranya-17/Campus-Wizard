@@ -60,3 +60,22 @@ export function starterProfile(p: Pick<Profile, "name" | "majorId" | "standing" 
 export function standingFor(units: number): Profile["standing"] {
   return units < 32 ? "freshman" : units < 64 ? "sophomore" : units < 96 ? "junior" : "senior";
 }
+
+/** A realistic syllabus excerpt for the "Try a sample syllabus" button (dates in the Fall 2026 term). */
+export const SAMPLE_SYLLABUS = {
+  courseCode: "CAS MA 226",
+  text: `CAS MA 226 Differential Equations, Fall 2026
+Instructor: Prof. Stevens. Lectures TR 9:30-10:45 am, LSE B01.
+
+Grading: Homework 20% (8 problem sets, lowest dropped), Quizzes 10%, Midterm 1 20%, Midterm 2 20%, Final exam 30%.
+
+Schedule of graded work
+HW 5 due Friday, Oct 30 at 11:59 pm: Ch. 4 second-order linear equations
+Quiz 3 on Tuesday, Nov 3 in class (9:30 am): undetermined coefficients
+Midterm 2 on Thursday, Nov 5, 9:30-10:45 am in LSE B01, covers Ch. 4-5: second-order equations, Laplace transforms
+HW 6 due Friday, Nov 13 at 11:59 pm: Laplace transforms
+HW 7 due Friday, Nov 20 at 11:59 pm: systems of first-order equations
+Project proposal due Tuesday, Dec 1: modeling with ODEs
+HW 8 due Friday, Dec 4 at 11:59 pm: phase plane analysis
+Final exam on Tuesday, Dec 15, 9:00-11:00 am, cumulative: all chapters`,
+};

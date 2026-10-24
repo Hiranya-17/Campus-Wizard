@@ -50,6 +50,14 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     return { reply: `Logged $${Number(spent[1]).toFixed(2)} at ${merchant} under ${category}.`, cards: card ? [card] : [] };
   }
 
+  if (/exam|midterm|final|quiz|homework|\bhw\b|\bdue\b|prioriti|what should i study|study for/.test(t)) {
+    const { result } = await runTool("study_plan", {}, profile);
+    const r = result as { message?: string; priorities?: { course: string; title: string; daysLeft: number; advice: string }[] };
+    if (r.message || !r.priorities?.length) return { reply: r.message ?? "Nothing due in the next three weeks.", cards: [] };
+    const lines = r.priorities.slice(0, 3).map((p, i) => `${i + 1}. ${p.course.split(" ").slice(1).join(" ")} ${p.title} (${p.daysLeft === 0 ? "today" : `${p.daysLeft} days`}): ${p.advice}`);
+    return { reply: `Prioritize:\n${lines.join("\n")}`, cards: [] };
+  }
+
   if (/budget|spent|spending|how much/.test(t)) {
     const { result, card } = await runTool("budget_summary", {}, profile);
     const r = result as { total: { spent: number; limit: number; projected: number } };

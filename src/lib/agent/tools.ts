@@ -2,6 +2,7 @@ import "server-only";
 import { recommendDiningRules } from "@/lib/agent/dining";
 import { getCourses, getDining, getFood, getMajor, listMajors } from "@/lib/data";
 import { hallsToday } from "@/lib/dining";
+import { examEvents, studyFocus, studyPriorities } from "@/lib/study";
 import { compareFood } from "@/lib/food";
 import { missingGroups, planSemester, unitsOf } from "@/lib/planner/semester";
 import { clashesWith, conflicts, emptySchedule, withCourse, withoutCourse, type Schedule } from "@/lib/schedule";
@@ -109,6 +110,11 @@ export const TOOL_DECLARATIONS = [
         from: { type: "string", description: "Building code to start from, e.g. WARREN, WEST, STUVI, MYLES" },
       },
     },
+  },
+  {
+    name: "study_plan",
+    description: "The student's upcoming exams, quizzes, homework, projects and papers from their uploaded syllabi, ranked by what to prioritize (grade weight and days left), with suggested study hours and topics. Use for 'what should I study?', 'when is my next exam?', 'what homework is due?'.",
+    parameters: { type: "object", properties: { days: { type: "number", description: "How far ahead to look, default 21" } } },
   },
   {
     name: "dining_halls",
@@ -309,7 +315,13 @@ export async function runTool(name: string, args: Args, profile: Profile): Promi
         profile.semester ??
         ((await runTool("plan_semester", {}, profile)).card as { data: SemesterPlanResponse } | undefined)?.data;
       const fixed = [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? [])];
-      const plan = planWeek({ weekOf: nextMonday(), fixed, prefs });
+      const weekOf = nextMonday();
+      const plan = planWeek({
+        weekOf,
+        fixed: [...fixed, ...examEvents(profile.assignments ?? [], weekOf)],
+        prefs,
+        focus: studyFocus(profile.assignments ?? [], new Date(`${weekOf}T08:00:00`)),
+      });
       const summary = {
         weekOf: plan.weekOf,
         classes: fixed.length,
@@ -321,6 +333,21 @@ export async function runTool(name: string, args: Args, profile: Profile): Promi
     case "compare_food": {
       const data = compareFood(getFood(), args.restaurant ? String(args.restaurant) : undefined);
       return { result: data, card: { kind: "food", data } };
+    }
+    case "study_plan": {
+      const items = profile.assignments ?? [];
+      if (!items.length) return { result: { message: "No syllabi uploaded yet. The student can add them on the Plan tab under 'Exams & homework'." } };
+      const ranked = studyPriorities(items, new Date(), Number(args.days ?? 21));
+      return {
+        result: {
+          today: new Date().toDateString(),
+          priorities: ranked.slice(0, 8).map((p) => ({
+            course: p.assignment.courseCode, title: p.assignment.title, kind: p.assignment.kind, date: p.assignment.date,
+            time: p.assignment.time != null ? fmtTime(p.assignment.time) : null, daysLeft: p.daysLeft,
+            weightPercent: p.assignment.weight, topics: p.assignment.topics, suggestedStudyHours: p.suggestedHours, advice: p.advice,
+          })),
+        },
+      };
     }
     case "dining_halls": {
       const halls = hallsToday(getDining());
