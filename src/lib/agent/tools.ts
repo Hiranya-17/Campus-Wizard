@@ -1,13 +1,15 @@
 import "server-only";
 import { getCourses, getFood, getMajor, listMajors } from "@/lib/data";
 import { compareFood } from "@/lib/food";
-import { missingGroups, planSemester } from "@/lib/planner/semester";
+import { missingGroups, planSemester, unitsOf } from "@/lib/planner/semester";
+import { clashesWith, conflicts, emptySchedule, withCourse, withoutCourse, type Schedule } from "@/lib/schedule";
+import { pickSections, sectionOptions } from "@/lib/sections";
 import { classEvents, planWeek } from "@/lib/planner/week";
 import { summarize } from "@/lib/budget";
 import { DEFAULT_BUDGET, DEFAULT_PREFS } from "@/lib/demo";
 import { fmtTime } from "@/lib/format";
 import { planRoute } from "@/lib/transit";
-import type { Category, ChatCard, Day, Expense, Profile, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
+import type { Category, ChatCard, Day, Expense, Profile, Section, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
 /** Monday of next week as YYYY-MM-DD. */
@@ -33,8 +35,32 @@ export const TOOL_DECLARATIONS = [
     parameters: { type: "object", properties: { code: { type: "string", description: 'Like "ENG EC 311"' } }, required: ["code"] },
   },
   {
+    name: "list_sections",
+    description: "All sections of a course for the student's term: lecture/standalone options with their discussions or labs, days, times, rooms, instructors, and which of the student's current classes each one clashes with. Use to answer 'is there a morning section of WR 153?' before adding.",
+    parameters: { type: "object", properties: { code: { type: "string", description: 'Like "CAS WR 153" or "WR 153"' } }, required: ["code"] },
+  },
+  {
+    name: "add_course",
+    description: "Add a course to the student's schedule (or change its sections if it's already there). Give section ids to choose specific ones, e.g. ['A1','C3']; leave them out to take the first set that doesn't clash with the current schedule. The calendar updates immediately.",
+    parameters: {
+      type: "object",
+      properties: { code: { type: "string" }, sections: { type: "array", items: { type: "string" } } },
+      required: ["code"],
+    },
+  },
+  {
+    name: "remove_course",
+    description: "Remove a course from the student's schedule.",
+    parameters: { type: "object", properties: { code: { type: "string" } }, required: ["code"] },
+  },
+  {
+    name: "check_schedule",
+    description: "The student's current schedule for the term: courses, sections, total units, time clashes, and missing prerequisites.",
+    parameters: { type: "object", properties: {} },
+  },
+  {
     name: "plan_semester",
-    description: "Suggest next semester's courses from the student's major sheet, completed courses and standing, with conflict-free sections. Uses the saved profile for anything not given.",
+    description: "Suggest a full schedule for the term from the student's major sheet, courses taken before this term and standing, with conflict-free sections. The student sees it with a 'Use this as my schedule' button. Uses the saved profile for anything not given.",
     parameters: {
       type: "object",
       properties: {
@@ -121,9 +147,87 @@ function parseTime(s: unknown): number | undefined {
   return h * 60 + Number(m[2] ?? 0);
 }
 
+/** "wr 153" or "CAS WR 153" -> the catalog code. */
+function resolveCode(raw: unknown, courses: Map<string, { code: string }>): string | null {
+  const q = String(raw ?? "").toUpperCase().replace(/\s+/g, "");
+  if (!q) return null;
+  for (const c of courses.keys()) if (c.replace(/\s+/g, "") === q) return c;
+  for (const c of courses.keys()) if (c.replace(/\s+/g, "").endsWith(q)) return c;
+  return null;
+}
+
 export async function runTool(name: string, args: Args, profile: Profile): Promise<ToolResult> {
   const courses = getCourses();
+  const schedule: Schedule = profile.semester?.term === profile.term ? profile.semester : emptySchedule(profile.term);
   switch (name) {
+    case "list_sections": {
+      const code = resolveCode(args.code, courses);
+      const c = code ? courses.get(code) : undefined;
+      if (!c) return { result: { error: `No course ${args.code}` } };
+      const opts = sectionOptions(c.sections.filter((s) => s.term === profile.term));
+      const describe = (u: Section[]) => ({
+        section: u[0].section,
+        meets: u.map((s) => `${s.schedule.raw || "TBA"} in ${s.location || "TBA"}`),
+        instructor: u[0].instructor,
+        clashesWith: clashesWith(u, schedule.courses, c.code),
+      });
+      return {
+        result: {
+          code: c.code, title: c.title, term: profile.term,
+          missingPrereqs: missingGroups(c.prereqs, new Set(profile.completed)).map((g) => g.join(" or ")),
+          options: opts.map((o) => ({ ...describe(o.primary), mustAlsoPickOneOf: o.companions.map((g) => ({ kind: g.label, choices: g.choices.map(describe) })) })),
+        },
+        card: { kind: "course", data: c },
+      };
+    }
+    case "add_course": {
+      const code = resolveCode(args.code, courses);
+      const c = code ? courses.get(code) : undefined;
+      if (!c) return { result: { error: `No course ${args.code}` } };
+      const termSections = c.sections.filter((s) => s.term === profile.term);
+      const others = schedule.courses.filter((x) => x.code !== c.code).flatMap((x) => x.sections);
+      let picked: Section[] | null;
+      const ids = (args.sections as string[] | undefined)?.map((x) => x.toUpperCase());
+      if (ids?.length) {
+        picked = termSections.filter((s) => ids.includes(s.section.toUpperCase()));
+        if (!picked.length) return { result: { error: `No sections ${ids.join(", ")} for ${c.code} in ${profile.term}` } };
+      } else {
+        picked = termSections.length ? pickSections(termSections, others) : [];
+        if (!picked) return { result: { error: `Every ${c.code} section clashes with your current classes. Remove or move one first.` } };
+      }
+      const next = withCourse(schedule, { code: c.code, title: c.title, units: unitsOf(c), reason: "Added by Rhett", sections: picked });
+      return {
+        result: {
+          added: c.code,
+          sections: picked.map((s) => `${s.section} ${s.schedule.raw} ${s.location} (${s.instructor})`),
+          clashesWith: clashesWith(picked, next.courses, c.code),
+          missingPrereqs: missingGroups(c.prereqs, new Set(profile.completed)).map((g) => g.join(" or ")),
+          totalUnits: next.totalUnits,
+        },
+        card: { kind: "schedule", data: next },
+      };
+    }
+    case "remove_course": {
+      const code = resolveCode(args.code, courses);
+      if (!code || !schedule.courses.some((x) => x.code === code)) return { result: { error: `${args.code} isn't in your schedule` } };
+      const next = withoutCourse(schedule, code);
+      return { result: { removed: code, totalUnits: next.totalUnits }, card: { kind: "schedule", data: next } };
+    }
+    case "check_schedule": {
+      const have = new Set(profile.completed);
+      return {
+        result: {
+          term: schedule.term,
+          totalUnits: schedule.totalUnits,
+          courses: schedule.courses.map((x) => ({
+            code: x.code, title: x.title, units: x.units,
+            sections: x.sections.map((s) => `${s.section} ${s.schedule.raw} ${s.location}`),
+            missingPrereqs: missingGroups(courses.get(x.code)?.prereqs ?? [], have).map((g) => g.join(" or ")),
+          })),
+          clashes: conflicts(schedule.courses).map((k) => `${k.a} ${k.aSection.section} (${k.aSection.schedule.raw}) overlaps ${k.b} ${k.bSection.section} (${k.bSection.schedule.raw})`),
+        },
+      };
+    }
     case "route_day": {
       const semester = profile.semester ?? ((await runTool("plan_semester", {}, profile)).card as { data: SemesterPlanResponse } | undefined)?.data;
       const todayIdx = (new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" })).getDay() + 6) % 7;

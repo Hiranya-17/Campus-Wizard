@@ -213,11 +213,11 @@ export interface Profile {
   name?: string;
   majorId: string; // "ce"
   standing: "freshman" | "sophomore" | "junior" | "senior";
-  term: string; // term being planned, "Spring 2027"
-  completed: string[];
+  term: string; // term being planned, "Fall 2026"
+  completed: string[]; // courses finished BEFORE the term being planned
   prefs?: WeekPrefs;
   clubs?: WeekEvent[]; // club meetings, from Gmail or typed in
-  semester?: SemesterPlanResponse; // last accepted semester plan
+  semester?: SemesterPlanResponse; // the student's chosen classes and sections for `term`
   home?: string; // building code where the day starts, e.g. "WARREN"
   expenses?: Expense[];
   budget?: Budget;
@@ -237,7 +237,8 @@ export interface ChatRequest {
 
 /** Structured results the chat screen can render as cards under the reply. */
 export type ChatCard =
-  | { kind: "semester"; data: SemesterPlanResponse }
+  | { kind: "semester"; data: SemesterPlanResponse } // a suggestion: shown with "Use this schedule"
+  | { kind: "schedule"; data: SemesterPlanResponse } // Rhett changed the student's schedule: applied right away
   | { kind: "week"; data: WeekPlanResponse }
   | { kind: "food"; data: FoodComparison[] }
   | { kind: "course"; data: Course }

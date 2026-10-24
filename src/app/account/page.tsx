@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { CourseHistoryPicker, useUnits } from "@/components/CourseHistoryPicker";
 import { Button, Card, PageTitle } from "@/components/ui";
-import { starterProfile } from "@/lib/demo";
+import { standingFor, starterProfile } from "@/lib/demo";
 import { authRequest, logout, useProfile } from "@/lib/profile";
 import type { Profile } from "@/lib/types";
 
@@ -18,9 +19,14 @@ function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: str
 }
 
 export default function AccountPage() {
-  const { profile, user, ready, reset } = useProfile();
+  const { profile, user, ready, reset, update } = useProfile();
   const [mode, setMode] = useState<"login" | "signup">("signup");
-  const [form, setForm] = useState({ name: "", email: "", password: "", majorId: "ce", standing: "freshman" as Profile["standing"], home: "WARREN", keepGuest: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", majorId: "ce", standing: "freshman" as Profile["standing"], home: "WARREN", keepGuest: false, completed: [] as string[] });
+  const [standingTouched, setStandingTouched] = useState(false);
+  const historyUnits = useUnits(form.completed);
+  useEffect(() => {
+    if (!standingTouched) setForm((f) => ({ ...f, standing: standingFor(historyUnits) }));
+  }, [historyUnits, standingTouched]);
   const [majors, setMajors] = useState<{ id: string; name: string }[]>([]);
   const [places, setPlaces] = useState<{ code: string; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -44,12 +50,12 @@ export default function AccountPage() {
             name: form.name, email: form.email, password: form.password,
             profile: form.keepGuest
               ? { ...profile, name: form.name, majorId: form.majorId, standing: form.standing, home: form.home }
-              : starterProfile({ name: form.name, majorId: form.majorId, standing: form.standing, home: form.home }),
+              : starterProfile({ name: form.name, majorId: form.majorId, standing: form.standing, home: form.home, completed: form.completed }),
           };
     const err = await authRequest(mode, body);
     setBusy(false);
     if (err) return setError(err);
-    window.location.href = mode === "signup" && !form.keepGuest ? "/plan" : "/";
+    window.location.href = mode === "signup" ? "/plan" : "/";
   };
 
   if (!ready) return <p className="text-sm text-zinc-400">Loading…</p>;
@@ -67,7 +73,11 @@ export default function AccountPage() {
         </Card>
         <Card className="text-sm text-zinc-600">
           Your courses, plans, clubs and spending are saved to your account, so they follow you to any device.
-          <p className="mt-2 text-xs text-zinc-400">{profile.completed.length} courses taken · {profile.expenses?.length ?? 0} purchases logged · {profile.clubs?.length ?? 0} club meetings</p>
+          <p className="mt-2 text-xs text-zinc-400">{profile.completed.length} courses taken · {profile.semester?.courses.length ?? 0} classes this term · {profile.expenses?.length ?? 0} purchases logged</p>
+        </Card>
+        <Card>
+          <p className="mb-3 text-sm font-semibold">Courses I&apos;ve taken <span className="font-normal text-zinc-500">(before {profile.term})</span></p>
+          <CourseHistoryPicker majorId={profile.majorId} value={profile.completed} onChange={(completed) => update({ completed })} />
         </Card>
         <Button variant="secondary" onClick={async () => { await logout(); window.location.href = "/"; }}>Log out</Button>
       </div>
@@ -100,7 +110,7 @@ export default function AccountPage() {
             </label>
             <label>
               <span className="text-xs text-zinc-500">Year</span>
-              <select value={form.standing} onChange={(e) => set({ standing: e.target.value as Profile["standing"] })} className="mt-1 w-full rounded-lg border border-zinc-300 p-2 capitalize">
+              <select value={form.standing} onChange={(e) => { setStandingTouched(true); set({ standing: e.target.value as Profile["standing"] }); }} className="mt-1 w-full rounded-lg border border-zinc-300 p-2 capitalize">
                 {STANDINGS.map((s) => <option key={s}>{s}</option>)}
               </select>
             </label>
@@ -114,6 +124,13 @@ export default function AccountPage() {
               <input type="checkbox" checked={form.keepGuest} onChange={(e) => set({ keepGuest: e.target.checked })} />
               Keep what I set up as a guest (courses, clubs, spending)
             </label>
+          </Card>
+        )}
+        {mode === "signup" && !form.keepGuest && (
+          <Card>
+            <p className="text-sm font-semibold">Courses you&apos;ve taken before this semester</p>
+            <p className="mb-3 text-xs text-zinc-500">Rhett checks prerequisites against these. Don&apos;t include classes you&apos;re taking now. {historyUnits > 0 && `${historyUnits} units, so you're a ${form.standing}.`}</p>
+            <CourseHistoryPicker majorId={form.majorId} value={form.completed} onChange={(completed) => set({ completed })} />
           </Card>
         )}
         {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

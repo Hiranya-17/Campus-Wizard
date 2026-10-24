@@ -10,6 +10,28 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
   const text = messages.at(-1)?.content ?? "";
   const t = text.toLowerCase();
 
+  const add = text.match(/\b(add|register for|sign me up for|take)\s+(?:(CAS|ENG|COM|CFA|CGS|SAR|SHA|SPH|QST|CDS|KHC|MET)\s?)?([A-Z]{2})\s?(\d{3})(?:\s+(?:section\s+)?([A-Z]\d|[A-Z]{2}))?/i);
+  if (add && /add|register|sign me up/i.test(add[1])) {
+    const { result, card } = await runTool("add_course", { code: `${add[2] ?? ""}${add[3]}${add[4]}`, sections: add[5] ? [add[5]] : undefined }, profile);
+    const r = result as { error?: string; added?: string; sections?: string[]; clashesWith?: string[] };
+    if (r.error) return { reply: r.error, cards: [] };
+    return {
+      reply: `Added ${r.added}: ${r.sections!.join("; ")}.${r.clashesWith?.length ? ` Heads up, it clashes with ${r.clashesWith.join(", ")}.` : ""}`,
+      cards: card ? [card] : [],
+    };
+  }
+  const drop = text.match(/\b(remove|drop)\s+(?:(CAS|ENG|COM|CFA|CGS|SAR|SHA|SPH|QST|CDS|KHC|MET)\s?)?([A-Z]{2})\s?(\d{3})/i);
+  if (drop) {
+    const { result, card } = await runTool("remove_course", { code: `${drop[2] ?? ""}${drop[3]}${drop[4]}` }, profile);
+    const r = result as { error?: string; removed?: string };
+    return { reply: r.error ?? `Removed ${r.removed}.`, cards: card ? [card] : [] };
+  }
+  if (/conflict|clash|overlap/.test(t)) {
+    const { result } = await runTool("check_schedule", {}, profile);
+    const r = result as { clashes: string[]; totalUnits: number };
+    return { reply: r.clashes.length ? `Clashes:\n${r.clashes.map((c) => `• ${c}`).join("\n")}` : `No clashes. You're at ${r.totalUnits} units.`, cards: [] };
+  }
+
   const code = text.match(CODE_RE);
   if (code && /prereq|take|can i|about|what is|tell me/.test(t)) {
     const full = `${(code[1] ?? (code[2].toUpperCase() === "EK" || code[2].toUpperCase() === "EC" ? "ENG" : "CAS")).toUpperCase()} ${code[2].toUpperCase()} ${code[3]}`;
@@ -45,7 +67,7 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     return { reply: `${r.day}:\n${lines.join("\n")}`, cards: [] };
   }
 
-  if (/semester|register|registration|next term|classes should|courses should|spring|fall/.test(t)) {
+  if (/semester|register|registration|next term|classes should|courses should|spring|fall|suggest|schedule/.test(t)) {
     const { result, card } = await runTool("plan_semester", {}, profile);
     const r = result as { courses: { code: string }[]; totalUnits: number; term: string };
     return {

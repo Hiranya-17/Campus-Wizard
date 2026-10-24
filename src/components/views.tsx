@@ -44,7 +44,7 @@ function ClassGrid({ plan }: { plan: SemesterPlanResponse }) {
   );
 }
 
-export function SemesterView({ plan }: { plan: SemesterPlanResponse }) {
+export function SemesterView({ plan, onUse }: { plan: SemesterPlanResponse; onUse?: () => void }) {
   return (
     <div className="space-y-3">
       <Card>
@@ -87,6 +87,9 @@ export function SemesterView({ plan }: { plan: SemesterPlanResponse }) {
       {plan.warnings.map((w) => (
         <p key={w} className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">{w}</p>
       ))}
+      {onUse && (
+        <button onClick={onUse} className="w-full rounded-xl bg-bu py-2 text-sm font-semibold text-white">Use this as my schedule</button>
+      )}
     </div>
   );
 }

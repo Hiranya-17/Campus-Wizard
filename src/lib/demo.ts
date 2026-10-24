@@ -31,16 +31,15 @@ const DEMO_EXPENSES: Expense[] = [
   { id: "d12", date: "2026-10-23", amount: 18.3, merchant: "Trader Joe's", category: "food", paidWith: "card", source: "receipt" },
 ];
 
-/** The single demo user: a CE sophomore who finished freshman year and sophomore fall. */
+/** The single demo user: a CE sophomore planning Fall 2026, with freshman year done. */
 export const DEMO_PROFILE: Profile = {
   name: "Terrier",
   majorId: "ce",
   standing: "sophomore",
-  term: "Spring 2027",
+  term: "Fall 2026",
   completed: [
     "CAS MA 123", "CAS CH 131", "ENG EK 100", "ENG EK 125", "CAS WR 120",
     "CAS MA 124", "CAS PY 211", "ENG EK 131", "ENG EK 103", "CAS WR 150",
-    "CAS MA 225", "CAS PY 212", "ENG EK 307", "ENG EC 327", "CAS MA 193",
   ],
   prefs: DEFAULT_PREFS,
   home: "WARREN",
@@ -52,6 +51,11 @@ export const DEMO_PROFILE: Profile = {
 };
 
 /** A brand-new account: no demo courses, clubs or spending. */
-export function starterProfile(p: Pick<Profile, "name" | "majorId" | "standing" | "home">): Profile {
-  return { ...p, term: "Spring 2027", completed: [], prefs: DEFAULT_PREFS, budget: DEFAULT_BUDGET, expenses: [], clubs: [] };
+export function starterProfile(p: Pick<Profile, "name" | "majorId" | "standing" | "home"> & { completed?: string[] }): Profile {
+  return { term: "Fall 2026", completed: [], ...p, prefs: DEFAULT_PREFS, budget: DEFAULT_BUDGET, expenses: [], clubs: [] };
+}
+
+/** Class standing from units completed (BU: 32 per year). */
+export function standingFor(units: number): Profile["standing"] {
+  return units < 32 ? "freshman" : units < 64 ? "sophomore" : units < 96 ? "junior" : "senior";
 }
