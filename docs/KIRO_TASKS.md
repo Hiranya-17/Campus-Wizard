@@ -90,7 +90,7 @@ stop and show me the counterexample before fixing anything.
 
 Files: `src/lib/google/*`, `src/app/api/google/*`, and the "Fixed this week" card in `src/app/week/page.tsx`
 
-Before starting: in Google Cloud Console create an OAuth client (Web), consent screen in **Testing** mode, scope `gmail.readonly`, add all four of you as test users, redirect URI `https://ds-x-hackachusetts.vercel.app/api/google/callback` and `http://localhost:3000/api/google/callback`. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env.local` and on Vercel. In Kiro, add an MCP server (for example a fetch or docs server) and use it to read the Gmail API docs while writing the spec.
+Before starting: in Google Cloud Console create an OAuth client (Web), consent screen in **Testing** mode, scope `gmail.readonly`, add all four of you as test users, redirect URI `https://campuswizard.vercel.app/api/google/callback` and `http://localhost:3000/api/google/callback`. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env.local` and on Vercel. In Kiro, add an MCP server (for example a fetch or docs server) and use it to read the Gmail API docs while writing the spec.
 
 ```
 Read docs/KIRO_HANDOFF.md, then create a spec "gmail-club-sync" for task T4:

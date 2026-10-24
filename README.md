@@ -4,7 +4,7 @@ DS+X 2026 (College track) × Hackachusetts 2026 (Civic Action, challenge V4: Bet
 
 Rhett helps BU students plan registration around prerequisites and their major, plan their week around classes and clubs, and find the cheapest delivery app for the same order.
 
-**Live app:** https://ds-x-hackachusetts.vercel.app (no login needed: it opens as a demo CE sophomore; tap "Log in" to create your own account)
+**Live app:** https://campuswizard.vercel.app (no login needed: it opens as a demo CE sophomore; tap "Log in" to create your own account)
 
 **Track:** Hackachusetts Civic Action, challenge V4 "Better college experiences" · DS+X College track
 
@@ -68,7 +68,7 @@ All shapes live in [`src/lib/types.ts`](src/lib/types.ts). Example data is in [`
 
 Times are minutes after midnight (`545` = 9:05 am). Days are `"Mon"`…`"Sun"`.
 
-Privacy Policy: https://ds-x-hackachusetts.vercel.app/privacy · Terms of Service: https://ds-x-hackachusetts.vercel.app/terms
+Privacy Policy: https://campuswizard.vercel.app/privacy · Terms of Service: https://campuswizard.vercel.app/terms
 
 ## Data sources and credits
 
