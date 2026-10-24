@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
 import { GmailImport } from "@/components/GmailImport";
+import { CalendarExport } from "@/components/CalendarExport";
 import { WeekView } from "@/components/views";
 import { DEFAULT_PREFS } from "@/lib/demo";
 import { fmtTime, fromInputTime, toInputTime } from "@/lib/format";
@@ -174,6 +175,13 @@ export default function WeekPage() {
       {plan && (
         <>
           <WeekView plan={plan} />
+          {/* CalendarExport renders only when Google is connected; shows a
+              preview + confirm flow before exporting. The onClose link inside
+              it lets the user fall back to .ics if they prefer. */}
+          <CalendarExport
+            weekOf={plan.weekOf}
+            events={plan.events}
+          />
           <Button variant="secondary" onClick={downloadIcs}>Add to Google / Apple Calendar (.ics)</Button>
         </>
       )}
