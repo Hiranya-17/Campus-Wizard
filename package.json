@@ -12,9 +12,11 @@
     "check": "tsc --noEmit && eslint src && vitest --run && node scripts/validate-majors.mjs"
   },
   "dependencies": {
+    "jspdf": "4.2.1",
     "next": "^15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "read-excel-file": "9.3.12",
     "redis": "^4.7.0",
     "server-only": "^0.0.1"
   },

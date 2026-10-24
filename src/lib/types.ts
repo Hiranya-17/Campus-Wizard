@@ -309,6 +309,7 @@ export interface ExpenseExtractRequest {
   text?: string;
   imageBase64?: string;
   mimeType?: string; // "image/jpeg"
+  pdfBase64?: string; // a receipt or a bank/card statement as PDF
 }
 
 // ---------- the single demo user (kept in the browser, sent with each chat) ----------
