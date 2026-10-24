@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { Card, Pill } from "@/components/ui";
 import { fmtTime, money } from "@/lib/format";
 import type { Expense, ExtractedEvent, WeekEvent } from "@/lib/types";
@@ -15,7 +15,26 @@ interface EmailSummary {
   date: string;
   snippet: string;
   kind: "club" | "order" | "other";
+  account: string; // "primary" or the extra inbox's address
 }
+
+interface Inbox {
+  account: string;
+  email: string | null;
+  primary: boolean;
+}
+
+const MAX_EXTRA_INBOXES = 4; // matches MAX_MAILBOXES on the server
+const inboxLabel = (i: Inbox) => i.email ?? "Main Google account";
+/** Message ids are only unique within one inbox. */
+const emailKey = (e: { account: string; id: string }) => `${e.account}:${e.id}`;
+
+/** What the Google callback reports after "Add another email". */
+const INBOX_NOTICE: Record<string, string> = {
+  added: "Inbox added. Its order confirmations show up below.",
+  already: "That address is already your main Google connection.",
+  full: `You can link up to ${MAX_EXTRA_INBOXES} extra inboxes. Remove one on the Account page first.`,
+};
 
 type ExtractMode = "events" | "expenses";
 
@@ -35,6 +54,13 @@ interface ExtractedEmail {
 interface State {
   /** null = not yet checked, false = no Google connection, true = connected */
   connected: boolean | null;
+  /** Logged in and Google is set up on this server, so "Connect an inbox" can work */
+  canConnect: boolean;
+  inboxes: Inbox[];
+  /** "all" or one inbox's account */
+  filter: string;
+  /** Inboxes that couldn't be read on the last load */
+  failed: string[];
   emails: EmailSummary[];
   loadingList: boolean;
   listError: string | null;
@@ -48,8 +74,10 @@ interface State {
 
 type Action =
   | { type: "SET_CONNECTED"; connected: boolean }
+  | { type: "SET_INBOXES"; inboxes: Inbox[]; canConnect: boolean }
+  | { type: "SET_FILTER"; filter: string }
   | { type: "LOAD_LIST" }
-  | { type: "LIST_OK"; emails: EmailSummary[] }
+  | { type: "LIST_OK"; emails: EmailSummary[]; failed: string[] }
   | { type: "LIST_ERR"; error: string }
   | { type: "EXTRACT_START"; id: string }
   | { type: "EXTRACT_OK"; result: ExtractedEmail }
@@ -62,10 +90,14 @@ function reducer(s: State, a: Action): State {
   switch (a.type) {
     case "SET_CONNECTED":
       return { ...s, connected: a.connected };
+    case "SET_INBOXES":
+      return { ...s, inboxes: a.inboxes, canConnect: a.canConnect, connected: a.inboxes.length > 0 };
+    case "SET_FILTER":
+      return { ...s, filter: a.filter };
     case "LOAD_LIST":
       return { ...s, loadingList: true, listError: null, emails: [] };
     case "LIST_OK":
-      return { ...s, loadingList: false, emails: a.emails };
+      return { ...s, loadingList: false, emails: a.emails, failed: a.failed };
     case "LIST_ERR":
       return { ...s, loadingList: false, listError: a.error };
     case "EXTRACT_START":
@@ -100,6 +132,10 @@ function reducer(s: State, a: Action): State {
 
 const init: State = {
   connected: null,
+  canConnect: false,
+  inboxes: [],
+  filter: "all",
+  failed: [],
   emails: [],
   loadingList: false,
   listError: null,
@@ -150,14 +186,23 @@ export interface GmailImportProps {
 
 export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportProps) {
   const [state, dispatch] = useReducer(reducer, init);
+  const [notice, setNotice] = useState<string | null>(null);
   const loadedRef = useRef(false);
 
-  // Check connection status once on mount
+  // Check which inboxes are linked once on mount, and show the result of an "Add another email" round trip
   useEffect(() => {
-    fetch("/api/google/status")
-      .then((r) => r.json())
-      .then((d) => dispatch({ type: "SET_CONNECTED", connected: Boolean(d.connected) }))
+    Promise.all([fetch("/api/google/status").then((r) => r.json()), fetch("/api/auth/me").then((r) => r.json())])
+      .then(([status, me]) =>
+        dispatch({ type: "SET_INBOXES", inboxes: status.inboxes ?? [], canConnect: Boolean(me.user && me.googleAvailable) }),
+      )
       .catch(() => dispatch({ type: "SET_CONNECTED", connected: false }));
+    const url = new URL(window.location.href);
+    const result = url.searchParams.get("inbox");
+    if (result && INBOX_NOTICE[result]) {
+      setNotice(INBOX_NOTICE[result]);
+      url.searchParams.delete("inbox");
+      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    }
   }, []);
 
   // Auto-load emails when we confirm the user is connected
@@ -170,7 +215,20 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
   }, [state.connected]);
 
   if (state.connected === null) return null; // still checking
-  if (!state.connected) return null;         // not connected — parent controls visibility
+  if (!state.connected) {
+    if (!state.canConnect) return null; // guests and servers without Google: nothing to connect
+    return (
+      <Card className="space-y-2">
+        <p className="text-sm font-semibold">Import from Gmail</p>
+        <p className="text-xs text-zinc-500">
+          Link the inbox you shop with (read-only) and CampusWizard finds your {mode === "expenses" ? "order confirmations" : "club emails"}. You can add more than one address.
+        </p>
+        <a href="/api/google/auth?mailbox=1" className="block w-full rounded-xl border border-zinc-300 bg-white py-2.5 text-center text-sm font-semibold">
+          Connect an inbox
+        </a>
+      </Card>
+    );
+  }
 
   // ---- data fetching ----
 
@@ -182,11 +240,11 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
         ? "in:inbox newer_than:30d (order confirmation OR receipt OR shipped OR invoice)"
         : "in:inbox newer_than:30d";
     try {
-      const res = await fetch(`/api/google/gmail?q=${encodeURIComponent(q)}&max=30`);
-      if (res.status === 401) { dispatch({ type: "SET_CONNECTED", connected: false }); return; }
-      const data = await res.json() as { messages?: EmailSummary[]; error?: string };
+      const res = await fetch(`/api/google/gmail?q=${encodeURIComponent(q)}&max=30&account=all`);
+      if (res.status === 401) { dispatch({ type: "LIST_ERR", error: "Google access expired. Reconnect your inbox on the Account page." }); return; }
+      const data = await res.json() as { messages?: EmailSummary[]; failed?: string[]; error?: string };
       if (data.error) { dispatch({ type: "LIST_ERR", error: data.error }); return; }
-      dispatch({ type: "LIST_OK", emails: data.messages ?? [] });
+      dispatch({ type: "LIST_OK", emails: data.messages ?? [], failed: data.failed ?? [] });
     } catch {
       dispatch({ type: "LIST_ERR", error: "Could not reach Gmail." });
     }
@@ -194,15 +252,16 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
 
   async function extractEmail(summary: EmailSummary) {
     if (state.extracting) return; // don't double-fetch
+    const key = emailKey(summary);
     // If already extracted, just toggle expand
-    if (state.extracted.has(summary.id)) {
-      dispatch({ type: "TOGGLE_EXPAND", id: summary.id });
+    if (state.extracted.has(key)) {
+      dispatch({ type: "TOGGLE_EXPAND", id: key });
       return;
     }
-    dispatch({ type: "EXTRACT_START", id: summary.id });
+    dispatch({ type: "EXTRACT_START", id: key });
     try {
-      // 1. Fetch full body
-      const bodyRes = await fetch(`/api/google/gmail/${summary.id}`);
+      // 1. Fetch full body from the inbox it came from
+      const bodyRes = await fetch(`/api/google/gmail/${summary.id}?account=${encodeURIComponent(summary.account)}`);
       if (!bodyRes.ok) throw new Error(`${bodyRes.status}`);
       const { message } = await bodyRes.json() as { message: { text: string; kind: string } };
 
@@ -238,7 +297,7 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
       dispatch({
         type: "EXTRACT_OK",
         result: {
-          id: summary.id,
+          id: key,
           subject: summary.subject,
           from: summary.from,
           date: summary.date,
@@ -250,7 +309,7 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
         },
       });
     } catch {
-      dispatch({ type: "EXTRACT_ERR", id: summary.id });
+      dispatch({ type: "EXTRACT_ERR", id: key });
     }
   }
 
@@ -351,8 +410,13 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
 
   // ---- main render ----
 
-  const { emails, loadingList, listError, extracting, expanded, extracted } = state;
+  const { inboxes, filter, failed, loadingList, listError, extracting, expanded, extracted } = state;
   const modeLabel = mode === "events" ? "club emails" : "order confirmations";
+  const emails = filter === "all" ? state.emails : state.emails.filter((e) => e.account === filter);
+  const several = inboxes.length > 1;
+  const canAddMore = inboxes.filter((i) => !i.primary).length < MAX_EXTRA_INBOXES;
+  const chip = (on: boolean) =>
+    `inline-flex min-h-8 max-w-full items-center truncate rounded-full border px-3 text-xs font-medium ${on ? "border-bu bg-red-50 text-bu" : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"}`;
 
   return (
     <Card className="space-y-3">
@@ -370,6 +434,38 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
         </button>
       </div>
 
+      {notice && <p role="status" className="rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-800">{notice}</p>}
+
+      <div className="flex flex-wrap gap-1.5" aria-label="Inboxes">
+        {several && (
+          <button className={chip(filter === "all")} aria-pressed={filter === "all"} onClick={() => dispatch({ type: "SET_FILTER", filter: "all" })}>
+            All inboxes
+          </button>
+        )}
+        {inboxes.map((i) => (
+          <button
+            key={i.account}
+            className={chip(several && filter === i.account)}
+            aria-pressed={several && filter === i.account}
+            disabled={!several}
+            onClick={() => dispatch({ type: "SET_FILTER", filter: i.account })}
+          >
+            {inboxLabel(i)}
+          </button>
+        ))}
+        {canAddMore && (
+          <a href="/api/google/auth?mailbox=1" className={`${chip(false)} border-dashed font-semibold !text-bu`}>
+            + Add another email
+          </a>
+        )}
+      </div>
+
+      {failed.length > 0 && (
+        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Couldn&rsquo;t read {failed.join(", ")}. Remove and re-add it on the Account page.
+        </p>
+      )}
+
       {listError && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">{listError}</p>
       )}
@@ -381,13 +477,15 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
       {emails.length > 0 && (
         <ul className="divide-y divide-zinc-100">
           {emails.map((email) => {
-            const isExpanded = expanded === email.id;
-            const isExtracting = extracting === email.id;
-            const entry = extracted.get(email.id);
+            const key = emailKey(email);
+            const isExpanded = expanded === key;
+            const isExtracting = extracting === key;
+            const entry = extracted.get(key);
             const hasResults = Boolean(entry);
+            const inbox = inboxes.find((i) => i.account === email.account);
 
             return (
-              <li key={email.id} className="py-2">
+              <li key={key} className="py-2">
                 {/* Email row — clicking extracts or toggles */}
                 <button
                   className="flex w-full items-start gap-2 text-left"
@@ -409,6 +507,7 @@ export function GmailImport({ mode, onSaveEvents, onSaveExpenses }: GmailImportP
                     <span className="block truncate text-xs text-zinc-500">
                       {email.from.replace(/<.*>/, "").trim()} · {formatDate(email.date)}
                     </span>
+                    {several && inbox && <span className="block truncate text-[11px] text-zinc-400">to {inboxLabel(inbox)}</span>}
                     {!isExpanded && !hasResults && (
                       <span className="block truncate text-xs text-zinc-400">{email.snippet}</span>
                     )}

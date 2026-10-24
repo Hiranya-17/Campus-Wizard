@@ -3,6 +3,7 @@ import {
   exchangeCode,
   fetchGoogleUserInfo,
   getGoogleTokens,
+  saveMailbox,
   storeGoogleTokens,
   validateOAuthState,
 } from "@/lib/google/oauth";
@@ -39,8 +40,20 @@ export async function GET(req: Request) {
       const me = await currentUser();
       if (!me) return NextResponse.redirect(new URL("/account?error=login_first", req.url));
       const previous = await getGoogleTokens(me.id);
-      await storeGoogleTokens(me.id, { ...tokens, refreshToken: tokens.refreshToken ?? previous?.refreshToken ?? null });
+      const email = await fetchGoogleUserInfo(tokens.accessToken).then((u) => u.email, () => previous?.email);
+      await storeGoogleTokens(me.id, { ...tokens, email, refreshToken: tokens.refreshToken ?? previous?.refreshToken ?? null });
       return NextResponse.redirect(new URL("/account?google=connected", req.url));
+    }
+
+    // Another inbox: read-only Gmail for a second (third…) Google account, added to the logged-in student
+    if (flow === "mailbox") {
+      const me = await currentUser();
+      if (!me) return NextResponse.redirect(new URL("/account?error=login_first", req.url));
+      const { email } = await fetchGoogleUserInfo(tokens.accessToken);
+      const primary = await getGoogleTokens(me.id);
+      if (primary?.email === email) return NextResponse.redirect(new URL("/money?inbox=already", req.url));
+      const saved = await saveMailbox(me.id, email, { ...tokens, email });
+      return NextResponse.redirect(new URL(saved ? `/money?inbox=added` : "/money?inbox=full", req.url));
     }
 
     // Get user info from Google

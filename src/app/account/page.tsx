@@ -18,11 +18,17 @@ function GoogleConnectedCard() {
   const [connected, setConnected] = useState<boolean | null>(null);
   const [available, setAvailable] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [mainEmail, setMainEmail] = useState<string | null>(null);
+  const [extras, setExtras] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/google/status")
       .then((r) => r.json())
-      .then((d) => setConnected(Boolean(d.connected)))
+      .then((d) => {
+        setConnected(Boolean(d.connected));
+        setMainEmail(d.email ?? null);
+        setExtras(((d.inboxes ?? []) as { account: string; primary: boolean }[]).filter((i) => !i.primary).map((i) => i.account));
+      })
       .catch(() => setConnected(false));
     fetch("/api/auth/me")
       .then((r) => r.json())
@@ -30,10 +36,43 @@ function GoogleConnectedCard() {
       .catch(() => setAvailable(false));
   }, []);
 
+  const removeInbox = async (inbox: string) => {
+    setBusy(true);
+    await fetch("/api/google/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ inbox }) });
+    setExtras(extras.filter((e) => e !== inbox));
+    setBusy(false);
+  };
+
+  // Extra inboxes (read-only Gmail) work with or without the main connection
+  const extraInboxes = available && (
+    <Card className="space-y-2 text-sm">
+      <p className="font-medium">Other inboxes</p>
+      <p className="text-xs text-zinc-500">Shop or get club emails at another address? Link it read-only and the Money page searches it too.</p>
+      {extras.length > 0 && (
+        <ul className="divide-y divide-zinc-100">
+          {extras.map((e) => (
+            <li key={e} className="flex min-h-11 items-center gap-2">
+              <span className="min-w-0 flex-1 truncate">{e}</span>
+              <button onClick={() => removeInbox(e)} disabled={busy} className="text-xs text-red-600 hover:underline disabled:opacity-50">
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {extras.length < 4 && (
+        <a href="/api/google/auth?mailbox=1" className="block w-full rounded-xl border border-dashed border-zinc-300 bg-white py-2.5 text-center text-sm font-semibold text-bu">
+          + Add another email
+        </a>
+      )}
+    </Card>
+  );
+
   if (connected === null) return null; // still checking
   if (!connected) {
     if (!available) return null; // Google isn't configured on this server
     return (
+      <>
       <Card className="space-y-2 text-sm">
         <p className="font-medium">Connect Gmail &amp; Calendar</p>
         <p className="text-xs text-zinc-500">
@@ -43,6 +82,8 @@ function GoogleConnectedCard() {
           Connect Gmail &amp; Calendar
         </a>
       </Card>
+      {extraInboxes}
+      </>
     );
   }
 
@@ -54,6 +95,7 @@ function GoogleConnectedCard() {
   };
 
   return (
+    <>
     <Card className="flex items-center gap-3 text-sm">
       <svg width="18" height="18" viewBox="0 0 18 18" className="shrink-0" aria-hidden="true">
         <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />
@@ -61,9 +103,9 @@ function GoogleConnectedCard() {
         <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05" />
         <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335" />
       </svg>
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <p className="font-medium">Google connected</p>
-        <p className="text-xs text-zinc-500">Gmail and Calendar are available.</p>
+        <p className="truncate text-xs text-zinc-500">{mainEmail ? `${mainEmail} · Gmail and Calendar` : "Gmail and Calendar are available."}</p>
       </div>
       <button
         onClick={disconnect}
@@ -73,6 +115,8 @@ function GoogleConnectedCard() {
         {busy ? "Disconnecting…" : "Disconnect"}
       </button>
     </Card>
+    {extraInboxes}
+    </>
   );
 }
 

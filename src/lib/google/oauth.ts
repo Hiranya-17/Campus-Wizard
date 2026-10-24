@@ -31,7 +31,7 @@ export function googleConfigured(): boolean {
 const STATE_COOKIE = "rhett_oauth_state";
 const STATE_MAX_AGE = 60 * 10; // 10 minutes
 
-export type OAuthFlow = "signin" | "connect";
+export type OAuthFlow = "signin" | "connect" | "mailbox";
 
 /** Generate a state token (random + which flow it's for), persist it in a short-lived httpOnly cookie, return it. */
 export async function createOAuthState(flow: OAuthFlow = "signin"): Promise<string> {
@@ -55,7 +55,8 @@ export async function validateOAuthState(state: string): Promise<OAuthFlow | nul
   // Timing-safe compare
   if (stored.length !== state.length) return null;
   if (!crypto.timingSafeEqual(Buffer.from(stored), Buffer.from(state))) return null;
-  return stored.endsWith(".connect") ? "connect" : "signin";
+  const flow = stored.slice(stored.lastIndexOf(".") + 1);
+  return flow === "connect" || flow === "mailbox" ? flow : "signin";
 }
 
 // ---------------------------------------------------------------------------
@@ -67,12 +68,15 @@ export async function validateOAuthState(state: string): Promise<OAuthFlow | nul
  * - sign-in asks only for name and email (Google's basic scopes): no Google review is needed, so once the app is
  *   published anyone can use "Sign in with Google" without a warning screen;
  * - connect asks for Gmail (restricted) and Calendar (sensitive) only when the student taps "Connect Gmail &
- *   Calendar". Until Google verifies the app, that step works for the consent screen's test users.
+ *   Calendar". Until Google verifies the app, that step works for the consent screen's test users;
+ * - mailbox adds another Google account's inbox, read-only (students often shop from a personal address and
+ *   get club emails at their BU one). It never signs anyone in and never touches that account's calendar.
  */
 const SIGNIN_SCOPES = ["openid", "email", "profile"];
 export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
 const CONNECT_SCOPES = [...SIGNIN_SCOPES, GMAIL_SCOPE, CALENDAR_SCOPE];
+const MAILBOX_SCOPES = ["openid", "email", GMAIL_SCOPE];
 
 export async function buildAuthUrl(flow: OAuthFlow = "signin"): Promise<string> {
   const state = await createOAuthState(flow);
@@ -80,11 +84,13 @@ export async function buildAuthUrl(flow: OAuthFlow = "signin"): Promise<string> 
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     response_type: "code",
-    scope: (flow === "connect" ? CONNECT_SCOPES : SIGNIN_SCOPES).join(" "),
+    scope: (flow === "connect" ? CONNECT_SCOPES : flow === "mailbox" ? MAILBOX_SCOPES : SIGNIN_SCOPES).join(" "),
     state,
     ...(flow === "connect"
       ? { access_type: "offline", prompt: "consent", include_granted_scopes: "true" } // refresh token for Gmail/Calendar
-      : { prompt: "select_account" }),
+      : flow === "mailbox"
+        ? { access_type: "offline", prompt: "select_account consent" } // always let them pick which account to add
+        : { prompt: "select_account" }),
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 }
@@ -101,6 +107,7 @@ export interface GoogleTokens {
   refreshToken: string | null;
   expiresAt: number; // Unix ms
   scope: string;
+  email?: string; // which Google account these tokens belong to (saved since multiple inboxes were added)
 }
 
 interface RawTokenResponse {
@@ -162,16 +169,18 @@ export async function refreshAccessToken(refreshToken: string): Promise<GoogleTo
   };
 }
 
-/** Revoke both tokens at Google and delete the stored copy. */
+async function revokeAtGoogle(tokens: GoogleTokens): Promise<void> {
+  const token = tokens.refreshToken ?? tokens.accessToken;
+  await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`, {
+    method: "POST",
+    cache: "no-store",
+  }).catch(() => {}); // best-effort
+}
+
+/** Revoke both tokens at Google and delete the stored copy. Extra inboxes are kept. */
 export async function revokeTokens(userId: string): Promise<void> {
   const tokens = await getGoogleTokens(userId);
-  if (tokens) {
-    const token = tokens.refreshToken ?? tokens.accessToken;
-    await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`, {
-      method: "POST",
-      cache: "no-store",
-    }).catch(() => {}); // best-effort
-  }
+  if (tokens) await revokeAtGoogle(tokens);
   await setJSON(googleTokenKey(userId), null);
 }
 
@@ -189,12 +198,47 @@ export async function getGoogleTokens(userId: string): Promise<GoogleTokens | nu
   return getJSON<GoogleTokens>(googleTokenKey(userId));
 }
 
+// Extra inboxes (Gmail read-only), stored as one list per student
+export interface Mailbox {
+  email: string;
+  tokens: GoogleTokens;
+}
+export const MAX_MAILBOXES = 4;
+const mailboxKey = (userId: string) => `gmail_mailboxes:${userId}`;
+
+export async function getMailboxes(userId: string): Promise<Mailbox[]> {
+  return (await getJSON<Mailbox[]>(mailboxKey(userId))) ?? [];
+}
+
+/** Add an inbox, or refresh its tokens if it's already linked. Returns false when the list is full. */
+export async function saveMailbox(userId: string, email: string, tokens: GoogleTokens): Promise<boolean> {
+  const list = await getMailboxes(userId);
+  const i = list.findIndex((m) => m.email === email);
+  if (i >= 0) list[i] = { email, tokens: { ...tokens, refreshToken: tokens.refreshToken ?? list[i].tokens.refreshToken } };
+  else if (list.length >= MAX_MAILBOXES) return false;
+  else list.push({ email, tokens });
+  await setJSON(mailboxKey(userId), list);
+  return true;
+}
+
+export async function removeMailbox(userId: string, email: string): Promise<void> {
+  const list = await getMailboxes(userId);
+  const gone = list.find((m) => m.email === email);
+  if (gone) await revokeAtGoogle(gone.tokens);
+  await setJSON(mailboxKey(userId), list.filter((m) => m.email !== email));
+}
+
+/** "primary" = the main Gmail & Calendar connection; anything else is the email address of an extra inbox. */
+export const PRIMARY = "primary";
+
 /**
  * Return a valid access token, refreshing automatically if it expires within
  * 5 minutes. Returns null if no tokens are stored.
  */
-export async function getValidAccessToken(userId: string): Promise<string | null> {
-  const tokens = await getGoogleTokens(userId);
+export async function getValidAccessToken(userId: string, account: string = PRIMARY): Promise<string | null> {
+  const primary = await getGoogleTokens(userId);
+  const usePrimary = account === PRIMARY || (primary?.email !== undefined && primary.email === account);
+  const tokens = usePrimary ? primary : (await getMailboxes(userId)).find((m) => m.email === account)?.tokens ?? null;
   if (!tokens) return null;
 
   const fiveMin = 5 * 60 * 1000;
@@ -202,8 +246,9 @@ export async function getValidAccessToken(userId: string): Promise<string | null
 
   if (!tokens.refreshToken) return null; // can't refresh
   try {
-    const fresh = await refreshAccessToken(tokens.refreshToken);
-    await storeGoogleTokens(userId, fresh);
+    const fresh = { ...(await refreshAccessToken(tokens.refreshToken)), email: tokens.email };
+    if (usePrimary) await storeGoogleTokens(userId, fresh);
+    else await saveMailbox(userId, account, fresh);
     return fresh.accessToken;
   } catch {
     return null;

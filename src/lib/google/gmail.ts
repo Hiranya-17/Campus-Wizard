@@ -1,5 +1,5 @@
 import "server-only";
-import { getValidAccessToken } from "@/lib/google/oauth";
+import { GMAIL_SCOPE, PRIMARY, getGoogleTokens, getMailboxes, getValidAccessToken, hasScope } from "@/lib/google/oauth";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -14,6 +14,8 @@ export interface GmailMessageSummary {
   snippet: string;
   /** Heuristic label: "club" for newsletters, "order" for purchase confirmations */
   kind: "club" | "order" | "other";
+  /** Which inbox it came from: "primary" or an extra inbox's address */
+  account: string;
 }
 
 export interface GmailMessageBody {
@@ -109,8 +111,8 @@ function detectKind(subject: string, from: string, snippet: string): GmailMessag
 
 const BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 
-async function gmailFetch(userId: string, path: string): Promise<unknown> {
-  const token = await getValidAccessToken(userId);
+async function gmailFetch(userId: string, path: string, account: string): Promise<unknown> {
+  const token = await getValidAccessToken(userId, account);
   if (!token) throw new Error("No valid Google token. Please reconnect Google.");
 
   const res = await fetch(`${BASE}${path}`, {
@@ -130,10 +132,12 @@ export async function listMessages(
   userId: string,
   query = "in:inbox newer_than:30d",
   maxResults = 30,
+  account: string = PRIMARY,
 ): Promise<GmailMessageSummary[]> {
   const list = (await gmailFetch(
     userId,
     `/messages?q=${encodeURIComponent(query)}&maxResults=${maxResults}&fields=messages(id,threadId),nextPageToken`,
+    account,
   )) as { messages?: { id: string; threadId: string }[] };
 
   if (!list.messages?.length) return [];
@@ -144,6 +148,7 @@ export async function listMessages(
       const msg = (await gmailFetch(
         userId,
         `/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date&fields=id,threadId,snippet,payload(headers)`,
+        account,
       )) as { id: string; threadId: string; snippet?: string; payload?: { headers?: unknown[] } };
 
       const headers = (msg.payload?.headers ?? []) as { name: string; value: string }[];
@@ -161,6 +166,7 @@ export async function listMessages(
         date,
         snippet,
         kind: detectKind(subject, from, snippet),
+        account,
       } satisfies GmailMessageSummary;
     }),
   );
@@ -172,10 +178,11 @@ export async function listMessages(
 /**
  * Fetch one message and return its decoded plain-text body.
  */
-export async function getMessage(userId: string, messageId: string): Promise<GmailMessageBody> {
+export async function getMessage(userId: string, messageId: string, account: string = PRIMARY): Promise<GmailMessageBody> {
   const msg = (await gmailFetch(
     userId,
     `/messages/${messageId}?format=full&fields=id,payload`,
+    account,
   )) as { id: string; payload?: MimePart & { headers?: RawHeader[] } };
 
   const payload = msg.payload;
@@ -194,4 +201,38 @@ export async function getMessage(userId: string, messageId: string): Promise<Gma
     text,
     kind: detectKind(subject, from, text.slice(0, 400)),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Several inboxes
+// ---------------------------------------------------------------------------
+
+export interface Inbox {
+  account: string; // "primary" or the extra inbox's address
+  email: string | null; // null for a main connection made before addresses were saved
+  primary: boolean;
+}
+
+/** Every inbox this student has linked with Gmail access: the main connection first, then the extras. */
+export async function listInboxes(userId: string): Promise<Inbox[]> {
+  const [primary, extras] = await Promise.all([getGoogleTokens(userId), getMailboxes(userId)]);
+  const inboxes: Inbox[] = hasScope(primary, GMAIL_SCOPE) ? [{ account: PRIMARY, email: primary?.email ?? null, primary: true }] : [];
+  for (const m of extras) if (m.email !== primary?.email || !inboxes.length) inboxes.push({ account: m.email, email: m.email, primary: false });
+  return inboxes;
+}
+
+/** Search every linked inbox at once, newest first. An inbox that fails (e.g. access revoked) is reported, not fatal. */
+export async function listAllMessages(
+  userId: string,
+  query: string,
+  maxPerInbox: number,
+): Promise<{ messages: GmailMessageSummary[]; failed: string[] }> {
+  const inboxes = await listInboxes(userId);
+  const results = await Promise.all(
+    inboxes.map((i) => listMessages(userId, query, maxPerInbox, i.account).then((m) => ({ ok: true as const, m }), () => ({ ok: false as const, i }))),
+  );
+  const messages = results.flatMap((r) => (r.ok ? r.m : []));
+  const failed = results.flatMap((r) => (r.ok ? [] : [r.i.email ?? "your main Google account"]));
+  if (inboxes.length && failed.length === inboxes.length) throw new Error("No valid Google token. Please reconnect Google.");
+  return { messages: messages.sort((a, b) => b.date.localeCompare(a.date)), failed };
 }
