@@ -36,6 +36,10 @@ Without a Gemini key Rhett still works using keyword rules ("add WR 153", "plan 
 5. **Week:** paste a club email, tap "Find events", then "Plan my week" and download the .ics.
 6. **Money:** check the budget pace, paste an order confirmation email, and compare delivery prices.
 
+## How we used Kiro
+
+See [`.kiro/README.md`](.kiro/README.md): steering docs, four specs (property-based tests, agent hooks, delivery-price import, frontend), two hooks, what each one caught, and which parts were built with other tools.
+
 ## Who owns what
 
 | Person | Owns | Folders |
