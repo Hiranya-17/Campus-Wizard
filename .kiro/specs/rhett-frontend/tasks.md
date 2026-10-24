@@ -86,12 +86,12 @@ Implement all Person B frontend tasks for the Rhett Next.js 15 PWA: the typed AP
 
   - [x] 4.3 Extract `PlanCourseChecklist` component (inline in `plan/page.tsx`)
     - Accept `{ major, completed, offSheet, onToggle }` props
-    - Pure rendering: completed pills use `border-bu bg-bu text-white`; not-completed use `border-zinc-300 bg-white text-zinc-700`; off-sheet courses show a `×` dismiss button
+    - Pure rendering: completed pills use `border-bu bg-bu text-white`; not-completed use `border-zinc-300 bg-white text-zinc-700`; off-sheet courses show a `Ã—` dismiss button
     - _Requirements: 2.3, 2.4, 2.5_
 
   - [ ]* 4.4 Write unit tests for Plan page
     - Test that "No courses found" is shown when `GET /api/courses` returns `[]`
-    - Test that the "Use this as my semester" button shows "Saved as my semester ✓" when `plan === profile.semester`
+    - Test that the "Use this as my semester" button shows "Saved as my semester âœ“" when `plan === profile.semester`
     - _Requirements: 2.6, 2.14_
 
 - [x] 5. Polish Week page (`src/app/week/page.tsx`)
@@ -118,7 +118,7 @@ Implement all Person B frontend tasks for the Rhett Next.js 15 PWA: the typed AP
     - Test `WeekToDoList` "+" button is disabled when `name.trim()` is empty
     - _Requirements: 3.7, 3.10_
 
-- [ ] 6. Checkpoint — Ensure all tests pass
+- [x] 6. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 7. Polish Chat page (`src/app/chat/page.tsx`)
@@ -151,10 +151,11 @@ Implement all Person B frontend tasks for the Rhett Next.js 15 PWA: the typed AP
   - [x] 8.1 Confirm all 6 required manifest fields are correct
     - Read `public/manifest.webmanifest` and verify: `name`, `short_name`, `theme_color`, `background_color`, `icons` (pointing to `/icon.svg` with `"sizes": "any"`), `display`, and `start_url`
     - Confirm `src/app/layout.tsx` emits `<link rel="manifest">` via `metadata.manifest`
-    - Make no changes if all fields are already correct (design.md documents them as ✅)
+    - Make no changes if all fields are already correct (design.md documents them as âœ…)
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6_
 
 - [ ] 9. Add property-based tests (fast-check P1–P5)
+  - **BLOCKED (pending team decision):** This repo has no test runner configured. Setting up the required stack (Vitest + fast-check + @testing-library/react + jsdom) adds devDependencies and a `test` script to the shared `package.json`. Awaiting team agreement on a testing framework. Implementation tasks 1-8 and 10 are complete and the frontend type-checks and compiles cleanly; these property tests (P1-P5) are the only outstanding required work.
   - Install `fast-check` as a dev dependency: `npm install --save-dev fast-check`
   - [ ] 9.1 Write P1 — BottomNav active-tab mutual exclusion (`src/components/BottomNav.test.tsx`)
     - Generator: `fc.string()` for pathname
@@ -196,7 +197,7 @@ Implement all Person B frontend tasks for the Rhett Next.js 15 PWA: the typed AP
     - After Home page Ask Rhett submit with whitespace, keep focus on the input
     - _Requirements: 7.6_
 
-  - [ ] 10.3 Verify `disabled` attribute discipline across all buttons
+  - [x] 10.3 Verify `disabled` attribute discipline across all buttons
     - Confirm all "disabled during loading" buttons use React's `disabled={loading}` (not CSS-only)
     - _Requirements: 7.7_
 
