@@ -3,16 +3,8 @@ import { getCourses, getFood, getMajor, listMajors } from "@/lib/data";
 import { compareFood } from "@/lib/food";
 import { missingGroups, planSemester } from "@/lib/planner/semester";
 import { classEvents, planWeek } from "@/lib/planner/week";
+import { DEFAULT_PREFS } from "@/lib/demo";
 import type { ChatCard, Profile, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
-
-export const DEFAULT_PREFS: WeekPrefs = {
-  sleepHours: 8,
-  wakeTime: 450,
-  studyHoursPerDay: 3,
-  gymDaysPerWeek: 3,
-  gymMinutes: 60,
-  tasks: [{ name: "Call parents", minutes: 30, timesPerWeek: 1 }],
-};
 
 /** Monday of next week as YYYY-MM-DD. */
 export function nextMonday(from = new Date()): string {

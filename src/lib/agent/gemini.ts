@@ -29,7 +29,7 @@ export async function runGemini(messages: ChatMessage[], profile: Profile): Prom
   const cards: ChatCard[] = [];
 
   for (let step = 0; step < 6; step++) {
-    const res = await fetch(`${URL}?key=${key}`, {
+    const call = () => fetch(`${URL}?key=${key}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(25000), // fall back to rules rather than hang the demo
@@ -39,6 +39,9 @@ export async function runGemini(messages: ChatMessage[], profile: Profile): Prom
         tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
       }),
     });
+    let res = await call();
+    // Gemini is sometimes briefly overloaded; one retry usually works
+    if (res.status === 503 || res.status === 429) res = await call();
     if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
     const data = await res.json();
     const content: Content | undefined = data.candidates?.[0]?.content;

@@ -1,103 +1,87 @@
-import Image from "next/image";
+"use client";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui";
+import { EventRow } from "@/components/views";
+import { DEFAULT_PREFS } from "@/lib/demo";
+import { classEvents } from "@/lib/planner/week";
+import { useProfile } from "@/lib/profile";
+import type { Day, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
+import { DAYS } from "@/lib/types";
+
+const TILES = [
+  { href: "/plan", title: "Plan registration", body: "Next semester from your major sheet and prereqs" },
+  { href: "/week", title: "Plan my week", body: "Classes, clubs, study, gym and sleep" },
+  { href: "/food", title: "Cheapest delivery", body: "Same order across DoorDash, Uber Eats, Grubhub" },
+  { href: "/chat", title: "Ask Rhett", body: "Your AI assistant for BU life" },
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { profile } = useProfile();
+  const router = useRouter();
+  const [today, setToday] = useState<WeekEvent[] | null>(null);
+  const [ask, setAsk] = useState("");
+  const day: Day = DAYS[(new Date().getDay() + 6) % 7];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    (async () => {
+      let semester: SemesterPlanResponse | undefined = profile.semester;
+      if (!semester) {
+        const r = await fetch("/api/plan/semester", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ majorId: profile.majorId, term: profile.term, standing: profile.standing, completed: profile.completed }),
+        });
+        semester = await r.json();
+      }
+      const r = await fetch("/api/plan/week", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekOf: "", fixed: [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? [])], prefs: profile.prefs ?? DEFAULT_PREFS }),
+      });
+      const plan: WeekPlanResponse = await r.json();
+      setToday(plan.events.filter((e) => e.day === day && e.kind !== "sleep"));
+    })();
+  }, [profile, day]);
+
+  const now = new Date().getHours() * 60 + new Date().getMinutes();
+  const upcoming = today?.filter((e) => e.end > now) ?? [];
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-sm text-zinc-500">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
+        <h1 className="text-2xl font-bold">Hi {profile.name ?? "Terrier"} 👋</h1>
+      </div>
+
+      <form onSubmit={(e) => { e.preventDefault(); if (ask.trim()) router.push(`/chat?q=${encodeURIComponent(ask)}`); }} className="flex gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
+        <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="Ask Rhett: “Can I take EC 413?”" className="min-w-0 flex-1 px-2 text-sm outline-none" />
+        <button className="rounded-xl bg-bu px-4 py-2 text-sm font-semibold text-white">Ask</button>
+      </form>
+
+      <section>
+        <div className="mb-2 flex items-baseline justify-between">
+          <h2 className="font-semibold">Rest of today</h2>
+          <Link href="/week" className="text-xs font-medium text-bu">Full week →</Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {today === null ? (
+          <p className="text-sm text-zinc-400">Planning your day…</p>
+        ) : upcoming.length ? (
+          <ul className="space-y-1.5">{upcoming.slice(0, 5).map((e) => <EventRow key={e.id} e={e} />)}</ul>
+        ) : (
+          <Card className="text-sm text-zinc-500">Nothing else today. Enjoy the evening.</Card>
+        )}
+      </section>
+
+      <section className="grid grid-cols-2 gap-3">
+        {TILES.map((t) => (
+          <Link key={t.href} href={t.href} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-bu">
+            <p className="font-semibold">{t.title}</p>
+            <p className="mt-1 text-xs text-zinc-500">{t.body}</p>
+          </Link>
+        ))}
+      </section>
     </div>
   );
 }

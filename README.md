@@ -19,7 +19,7 @@ Without a key the chat still works using keyword rules ("plan my semester", "pla
 | Person | Owns | Folders |
 | --- | --- | --- |
 | A (Claude Code) | Course data, planners, agent backend | `scripts/`, `data/`, `src/lib/`, `src/app/api/` |
-| B (Kiro) | Screens | `src/app/(screens)/`, `src/components/` |
+| B (Kiro) | Polish screens: Home, Plan, Week, Food, Chat (first versions built) | `src/app/*/page.tsx`, `src/components/` |
 | C (Kiro) | Google sign-in, Gmail, Calendar, food page, transit | `src/app/food/`, `src/lib/google/`, `src/app/api/transit/` |
 | D | Food dataset, research, pitch, Devpost | `data/food.json` (via C), `docs/` |
 
