@@ -1,5 +1,7 @@
 import "server-only";
-import { getCourses, getFood, getMajor, listMajors } from "@/lib/data";
+import { recommendDiningRules } from "@/lib/agent/dining";
+import { getCourses, getDining, getFood, getMajor, listMajors } from "@/lib/data";
+import { hallsToday } from "@/lib/dining";
 import { compareFood } from "@/lib/food";
 import { missingGroups, planSemester, unitsOf } from "@/lib/planner/semester";
 import { clashesWith, conflicts, emptySchedule, withCourse, withoutCourse, type Schedule } from "@/lib/schedule";
@@ -9,7 +11,7 @@ import { summarize } from "@/lib/budget";
 import { DEFAULT_BUDGET, DEFAULT_PREFS } from "@/lib/demo";
 import { fmtTime } from "@/lib/format";
 import { planRoute } from "@/lib/transit";
-import type { Category, ChatCard, Day, Expense, Profile, Section, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
+import type { Category, ChatCard, Day, DiningRecommendRequest, Expense, Profile, Section, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
 /** Monday of next week as YYYY-MM-DD. */
@@ -105,6 +107,18 @@ export const TOOL_DECLARATIONS = [
       properties: {
         day: { type: "string", enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], description: "Defaults to today" },
         from: { type: "string", description: "Building code to start from, e.g. WARREN, WEST, STUVI, MYLES" },
+      },
+    },
+  },
+  {
+    name: "dining_halls",
+    description: "BU dining halls today: which are open now, today's hours, and dishes matching what the student wants (cuisine, meal, diet like vegan/halal). Use for 'where should I eat on campus?'. For delivery prices use compare_food instead.",
+    parameters: {
+      type: "object",
+      properties: {
+        cuisine: { type: "string", description: "e.g. Italian, spicy, comfort food; empty for anything" },
+        meal: { type: "string", enum: ["breakfast", "lunch", "dinner"] },
+        tags: { type: "array", items: { type: "string" }, description: "dietary needs: vegan, vegetarian, halal, gluten-free" },
       },
     },
   },
@@ -307,6 +321,23 @@ export async function runTool(name: string, args: Args, profile: Profile): Promi
     case "compare_food": {
       const data = compareFood(getFood(), args.restaurant ? String(args.restaurant) : undefined);
       return { result: data, card: { kind: "food", data } };
+    }
+    case "dining_halls": {
+      const halls = hallsToday(getDining());
+      const recs = recommendDiningRules(
+        { cuisine: String(args.cuisine ?? ""), meal: args.meal as DiningRecommendRequest["meal"], tags: args.tags as string[] | undefined },
+        halls,
+      );
+      return {
+        result: {
+          note: "Menus are sample rotations, not BU's live menu; hours are typical hours.",
+          halls: halls.map((h) => ({
+            name: h.hall.name, campus: h.hall.campus, openNow: h.openNow, current: h.currentPeriod,
+            hours: h.hours.map((p) => `${p.name} ${fmtTime(p.start)}-${fmtTime(p.end)}`),
+          })),
+          recommendations: recs,
+        },
+      };
     }
     case "budget_summary": {
       const summary = summarize(profile.expenses ?? [], profile.budget ?? DEFAULT_BUDGET);

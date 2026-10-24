@@ -15,8 +15,8 @@ import { DAYS } from "@/lib/types";
 const TILES = [
   { href: "/plan", title: "Plan registration", body: "Next semester from your major sheet and prereqs" },
   { href: "/week", title: "Plan my week", body: "Classes, clubs, study, to-dos and sleep" },
-  { href: "/money", title: "Money", body: "Semester budget, receipts and cheapest delivery" },
-  { href: "/chat", title: "Ask Rhett", body: "Your AI assistant for BU life" },
+  { href: "/food", title: "Food", body: "Dining halls open now, and the cheapest delivery app" },
+  { href: "/money", title: "Money", body: "Semester budget, receipts and spending pace" },
 ];
 
 export default function Home() {

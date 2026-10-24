@@ -1,0 +1,250 @@
+[
+  {
+    "id": "west",
+    "name": "The Fresh Food Co. at West Campus",
+    "building": "",
+    "address": "275 Babcock Street",
+    "campus": "West",
+    "style": "All-you-care-to-eat",
+    "payWith": ["Dining Plan Meals", "Convenience Points", "Dining Points", "Credit Cards", "Cash"],
+    "cuisines": ["American", "Italian", "Asian", "Vegan", "Breakfast"],
+    "features": ["Full Vegan Station", "Halal Options", "Known for its burgers", "Group Dining"],
+    "url": "https://www.bu.edu/dining/location/west/",
+    "hours": [
+      { "day": "Mon", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1320 }] },
+      { "day": "Tue", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1320 }] },
+      { "day": "Wed", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1320 }] },
+      { "day": "Thu", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1320 }] },
+      { "day": "Fri", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1320 }] },
+      { "day": "Sat", "periods": [{ "name": "Brunch", "start": 600, "end": 840 }, { "name": "Dinner", "start": 960, "end": 1320 }] },
+      { "day": "Sun", "periods": [{ "name": "Brunch", "start": 600, "end": 840 }, { "name": "Dinner", "start": 960, "end": 1320 }] }
+    ],
+    "menu": [
+      { "day": "Mon", "items": [
+        { "name": "Scrambled eggs & home fries", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian", "gluten-free"], "meals": ["breakfast"] },
+        { "name": "Build-your-own burger", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Penne alla vodka", "station": "Pasta", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Crispy tofu stir-fry", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan", "gluten-free"], "meals": ["lunch", "dinner"] },
+        { "name": "Halal chicken shawarma bowl", "station": "Halal", "cuisine": "Mediterranean", "tags": ["halal"], "meals": ["dinner"] }
+      ] },
+      { "day": "Tue", "items": [
+        { "name": "Belgian waffles", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "Grilled chicken sandwich", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Chicken tikka masala & basmati", "station": "World", "cuisine": "Indian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Roasted vegetable buddha bowl", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan", "gluten-free"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Wed", "items": [
+        { "name": "Veggie omelet station", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian", "gluten-free"], "meals": ["breakfast"] },
+        { "name": "Smash burgers & fries", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Chicken fajitas & rice", "station": "World", "cuisine": "Mexican", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan pad thai", "station": "Vegan", "cuisine": "Asian", "tags": ["vegan"], "meals": ["dinner"] },
+        { "name": "Halal lamb kofta", "station": "Halal", "cuisine": "Mediterranean", "tags": ["halal"], "meals": ["dinner"] }
+      ] },
+      { "day": "Thu", "items": [
+        { "name": "French toast sticks", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "BBQ pulled pork sandwich", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Margherita pizza", "station": "Pizza", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Chana masala & rice", "station": "Vegan", "cuisine": "Indian", "tags": ["vegan"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Fri", "items": [
+        { "name": "Breakfast burrito", "station": "Breakfast", "cuisine": "Mexican", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "Fish & chips", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Teriyaki chicken & rice bowl", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Falafel plate", "station": "Vegan", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Sat", "items": [
+        { "name": "Brunch pancakes & bacon", "station": "Breakfast", "cuisine": "Breakfast", "tags": [], "meals": ["breakfast", "lunch"] },
+        { "name": "Build-your-own burger", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Vegetable lo mein", "station": "World", "cuisine": "Asian", "tags": ["vegetarian"], "meals": ["dinner"] },
+        { "name": "Vegan chili", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] },
+      { "day": "Sun", "items": [
+        { "name": "Brunch eggs benedict", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast", "lunch"] },
+        { "name": "Roast turkey & gravy", "station": "Comfort", "cuisine": "American", "tags": [], "meals": ["dinner"] },
+        { "name": "Eggplant parmesan", "station": "Pasta", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["dinner"] },
+        { "name": "Vegan Buddha bowl", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] }
+    ]
+  },
+  {
+    "id": "warren",
+    "name": "The Fresh Food Co. at Warren Towers",
+    "building": "",
+    "address": "700 Commonwealth Avenue",
+    "campus": "Central",
+    "style": "All-you-care-to-eat",
+    "payWith": ["Dining Plan Meals", "Convenience Points", "Dining Points", "Credit Cards", "Cash"],
+    "cuisines": ["American", "Italian", "Vegan", "Mediterranean", "Breakfast"],
+    "features": ["18 stations", "Full Vegan Station", "Halal Options", "Gourmet pizza", "Full-service deli"],
+    "url": "https://www.bu.edu/dining/location/warren/",
+    "hours": [
+      { "day": "Mon", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Tue", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Wed", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Thu", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Fri", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Sat", "periods": [{ "name": "Brunch", "start": 600, "end": 840 }, { "name": "Dinner", "start": 960, "end": 1260 }] },
+      { "day": "Sun", "periods": [{ "name": "Brunch", "start": 600, "end": 840 }, { "name": "Dinner", "start": 960, "end": 1260 }] }
+    ],
+    "menu": [
+      { "day": "Mon", "items": [
+        { "name": "Egg & cheese bagel", "station": "Deli", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "Gourmet pepperoni pizza", "station": "Pizza", "cuisine": "Italian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Carved roast beef", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["dinner"] },
+        { "name": "Vegan shepherd's pie", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan"], "meals": ["lunch", "dinner"] },
+        { "name": "Halal chicken over rice", "station": "Halal", "cuisine": "Mediterranean", "tags": ["halal"], "meals": ["dinner"] }
+      ] },
+      { "day": "Tue", "items": [
+        { "name": "Oatmeal bar", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegan"], "meals": ["breakfast"] },
+        { "name": "Build-your-own deli sandwich", "station": "Deli", "cuisine": "American", "tags": [], "meals": ["lunch"] },
+        { "name": "Baked ziti", "station": "Pasta", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan tacos", "station": "Vegan", "cuisine": "Mexican", "tags": ["vegan"], "meals": ["dinner"] }
+      ] },
+      { "day": "Wed", "items": [
+        { "name": "Pancakes & sausage", "station": "Breakfast", "cuisine": "Breakfast", "tags": [], "meals": ["breakfast"] },
+        { "name": "Buffalo chicken pizza", "station": "Pizza", "cuisine": "Italian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Carved turkey breast", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["dinner"] },
+        { "name": "Mediterranean mezze plate", "station": "World", "cuisine": "Mediterranean", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan lentil curry", "station": "Vegan", "cuisine": "Indian", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] },
+      { "day": "Thu", "items": [
+        { "name": "Breakfast quesadilla", "station": "Breakfast", "cuisine": "Mexican", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "Reuben on rye", "station": "Deli", "cuisine": "American", "tags": [], "meals": ["lunch"] },
+        { "name": "Chicken parmesan", "station": "Pasta", "cuisine": "Italian", "tags": [], "meals": ["dinner"] },
+        { "name": "Vegan stir-fry noodles", "station": "Vegan", "cuisine": "Asian", "tags": ["vegan"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Fri", "items": [
+        { "name": "Avocado toast", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "Margherita pizza", "station": "Pizza", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Fried chicken & waffles", "station": "Comfort", "cuisine": "American", "tags": [], "meals": ["dinner"] },
+        { "name": "Falafel wrap", "station": "Vegan", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Sat", "items": [
+        { "name": "Brunch omelet bar", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian", "gluten-free"], "meals": ["breakfast", "lunch"] },
+        { "name": "Cheese pizza", "station": "Pizza", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["dinner"] },
+        { "name": "Carved ham", "station": "Grill", "cuisine": "American", "tags": [], "meals": ["dinner"] },
+        { "name": "Vegan mac & cheese", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan"], "meals": ["dinner"] }
+      ] },
+      { "day": "Sun", "items": [
+        { "name": "Brunch French toast", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast", "lunch"] },
+        { "name": "Lasagna bolognese", "station": "Pasta", "cuisine": "Italian", "tags": [], "meals": ["dinner"] },
+        { "name": "Roast chicken dinner", "station": "Comfort", "cuisine": "American", "tags": ["gluten-free"], "meals": ["dinner"] },
+        { "name": "Vegan grain bowl", "station": "Vegan", "cuisine": "Vegan", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] }
+    ]
+  },
+  {
+    "id": "marciano",
+    "name": "The Fresh Food Co. at Marciano Commons",
+    "building": "",
+    "address": "100 Bay State Road",
+    "campus": "East",
+    "style": "All-you-care-to-eat",
+    "payWith": ["Dining Plan Meals", "Convenience Points", "Dining Points", "Credit Cards", "Cash"],
+    "cuisines": ["American", "Italian", "Asian", "Mediterranean", "Vegan", "Breakfast"],
+    "features": ["Dedicated Gluten-Free Kitchen", "Full Vegan Kitchen", "Daily Halal Options", "International Flavors"],
+    "url": "https://www.bu.edu/dining/location/marciano/",
+    "hours": [
+      { "day": "Mon", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Tue", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Wed", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Thu", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1260 }] },
+      { "day": "Fri", "periods": [{ "name": "Breakfast", "start": 420, "end": 660 }, { "name": "Lunch", "start": 690, "end": 1020 }, { "name": "Dinner", "start": 1020, "end": 1200 }] },
+      { "day": "Sat", "periods": [{ "name": "Brunch", "start": 600, "end": 840 }, { "name": "Dinner", "start": 960, "end": 1200 }] },
+      { "day": "Sun", "periods": [{ "name": "Brunch", "start": 600, "end": 840 }, { "name": "Dinner", "start": 960, "end": 1260 }] }
+    ],
+    "menu": [
+      { "day": "Mon", "items": [
+        { "name": "Gluten-free pancakes", "station": "GF Kitchen", "cuisine": "Breakfast", "tags": ["gluten-free", "vegetarian"], "meals": ["breakfast"] },
+        { "name": "Korean bibimbap", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Margherita flatbread", "station": "Pizza", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan jackfruit tacos", "station": "Vegan", "cuisine": "Mexican", "tags": ["vegan"], "meals": ["dinner"] },
+        { "name": "Halal beef gyro", "station": "Halal", "cuisine": "Mediterranean", "tags": ["halal"], "meals": ["dinner"] }
+      ] },
+      { "day": "Tue", "items": [
+        { "name": "Shakshuka", "station": "World", "cuisine": "Mediterranean", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "General Tso's chicken", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Pasta primavera", "station": "Pasta", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan Ethiopian stew", "station": "Vegan", "cuisine": "Mediterranean", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] },
+      { "day": "Wed", "items": [
+        { "name": "Breakfast tacos", "station": "World", "cuisine": "Mexican", "tags": ["vegetarian"], "meals": ["breakfast"] },
+        { "name": "Chicken pad see ew", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Four-cheese pizza", "station": "Pizza", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan chickpea curry", "station": "Vegan", "cuisine": "Indian", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] },
+      { "day": "Thu", "items": [
+        { "name": "GF breakfast sandwich", "station": "GF Kitchen", "cuisine": "Breakfast", "tags": ["gluten-free"], "meals": ["breakfast"] },
+        { "name": "Beef bulgogi bowl", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Chicken parm sub", "station": "Deli", "cuisine": "Italian", "tags": [], "meals": ["lunch"] },
+        { "name": "Vegan falafel bowl", "station": "Vegan", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["dinner"] }
+      ] },
+      { "day": "Fri", "items": [
+        { "name": "Smoothie bowl", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegan", "gluten-free"], "meals": ["breakfast"] },
+        { "name": "Chicken tikka masala", "station": "World", "cuisine": "Indian", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Pesto pasta", "station": "Pasta", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["lunch", "dinner"] },
+        { "name": "Vegan sushi rolls", "station": "Vegan", "cuisine": "Asian", "tags": ["vegan"], "meals": ["dinner"] }
+      ] },
+      { "day": "Sat", "items": [
+        { "name": "Brunch huevos rancheros", "station": "World", "cuisine": "Mexican", "tags": ["vegetarian"], "meals": ["breakfast", "lunch"] },
+        { "name": "Ramen bar", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["dinner"] },
+        { "name": "GF cheese pizza", "station": "GF Kitchen", "cuisine": "Italian", "tags": ["gluten-free", "vegetarian"], "meals": ["dinner"] },
+        { "name": "Vegan burrito bowl", "station": "Vegan", "cuisine": "Mexican", "tags": ["vegan"], "meals": ["dinner"] }
+      ] },
+      { "day": "Sun", "items": [
+        { "name": "Brunch waffle bar", "station": "Breakfast", "cuisine": "Breakfast", "tags": ["vegetarian"], "meals": ["breakfast", "lunch"] },
+        { "name": "Sweet & sour chicken", "station": "World", "cuisine": "Asian", "tags": [], "meals": ["dinner"] },
+        { "name": "Gnocchi pomodoro", "station": "Pasta", "cuisine": "Italian", "tags": ["vegetarian"], "meals": ["dinner"] },
+        { "name": "Vegan mezze plate", "station": "Vegan", "cuisine": "Mediterranean", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] }
+      ] }
+    ]
+  },
+  {
+    "id": "granby",
+    "name": "Fresh Fuel at Granby Commons (Kosher)",
+    "building": "",
+    "address": "33 Harry Agganis Way",
+    "campus": "West",
+    "style": "Kosher",
+    "payWith": ["Dining Plan Meals", "Convenience Points", "Dining Points", "Credit Cards"],
+    "cuisines": ["Mediterranean", "American", "Kosher"],
+    "features": ["Certified Kosher", "Halal-friendly", "Vegetarian Options"],
+    "url": "https://www.bu.edu/dining/location/",
+    "hours": [
+      { "day": "Mon", "periods": [{ "name": "Lunch", "start": 690, "end": 900 }, { "name": "Dinner", "start": 1020, "end": 1200 }] },
+      { "day": "Tue", "periods": [{ "name": "Lunch", "start": 690, "end": 900 }, { "name": "Dinner", "start": 1020, "end": 1200 }] },
+      { "day": "Wed", "periods": [{ "name": "Lunch", "start": 690, "end": 900 }, { "name": "Dinner", "start": 1020, "end": 1200 }] },
+      { "day": "Thu", "periods": [{ "name": "Lunch", "start": 690, "end": 900 }, { "name": "Dinner", "start": 1020, "end": 1200 }] },
+      { "day": "Fri", "periods": [{ "name": "Lunch", "start": 690, "end": 900 }] },
+      { "day": "Sat", "periods": [] },
+      { "day": "Sun", "periods": [{ "name": "Dinner", "start": 1020, "end": 1200 }] }
+    ],
+    "menu": [
+      { "day": "Mon", "items": [
+        { "name": "Kosher grilled chicken & rice", "station": "Main", "cuisine": "Mediterranean", "tags": ["halal", "gluten-free"], "meals": ["lunch", "dinner"] },
+        { "name": "Hummus & pita plate", "station": "Mezze", "cuisine": "Mediterranean", "tags": ["vegetarian", "vegan"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Tue", "items": [
+        { "name": "Beef brisket", "station": "Main", "cuisine": "American", "tags": [], "meals": ["dinner"] },
+        { "name": "Israeli salad", "station": "Mezze", "cuisine": "Mediterranean", "tags": ["vegan", "gluten-free"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Wed", "items": [
+        { "name": "Falafel & tahini", "station": "Mezze", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["lunch", "dinner"] },
+        { "name": "Roasted vegetable couscous", "station": "Main", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["dinner"] }
+      ] },
+      { "day": "Thu", "items": [
+        { "name": "Kosher schnitzel", "station": "Main", "cuisine": "American", "tags": [], "meals": ["lunch", "dinner"] },
+        { "name": "Baba ganoush & pita", "station": "Mezze", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["lunch", "dinner"] }
+      ] },
+      { "day": "Fri", "items": [
+        { "name": "Shabbat roast chicken", "station": "Main", "cuisine": "Mediterranean", "tags": ["gluten-free"], "meals": ["lunch"] },
+        { "name": "Challah & dips", "station": "Mezze", "cuisine": "Mediterranean", "tags": ["vegetarian"], "meals": ["lunch"] }
+      ] },
+      { "day": "Sat", "items": [] },
+      { "day": "Sun", "items": [
+        { "name": "Mediterranean grain bowl", "station": "Main", "cuisine": "Mediterranean", "tags": ["vegan", "gluten-free"], "meals": ["dinner"] },
+        { "name": "Stuffed grape leaves", "station": "Mezze", "cuisine": "Mediterranean", "tags": ["vegan"], "meals": ["dinner"] }
+      ] }
+    ]
+  }
+]

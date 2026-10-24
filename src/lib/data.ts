@@ -1,7 +1,7 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import type { Course, FoodQuote, Major } from "@/lib/types";
+import type { Course, DiningHall, FoodQuote, Major } from "@/lib/types";
 import { sampleFood } from "@/mocks";
 
 const DATA = path.join(process.cwd(), "data");
@@ -37,4 +37,14 @@ export function listMajors(): { id: string; name: string }[] {
 export function getFood(): FoodQuote[] {
   const file = path.join(DATA, "food.json");
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : sampleFood;
+}
+
+let dining: DiningHall[] | null = null;
+
+export function getDining(): DiningHall[] {
+  if (!dining) {
+    const file = path.join(DATA, "dining.json");
+    dining = fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, "utf8")) as DiningHall[]) : [];
+  }
+  return dining ?? [];
 }

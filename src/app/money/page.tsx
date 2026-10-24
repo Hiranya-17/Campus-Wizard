@@ -1,15 +1,12 @@
 "use client";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
 import { BudgetView, CATEGORY_LABEL } from "@/components/BudgetView";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
-import { FoodView } from "@/components/views";
 import { summarize } from "@/lib/budget";
 import { DEFAULT_BUDGET } from "@/lib/demo";
-import { compareFood } from "@/lib/food";
 import { money } from "@/lib/format";
 import { useProfile } from "@/lib/profile";
-import type { Category, Expense, FoodComparison, FoodQuote } from "@/lib/types";
+import type { Category, Expense } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
 const newId = () => `m${Date.now().toString(36)}`;
@@ -111,60 +108,11 @@ function Budget() {
   );
 }
 
-function Food() {
-  const { profile, update } = useProfile();
-  const [quotes, setQuotes] = useState<FoodQuote[]>([]);
-  const [q, setQ] = useState("");
-  const [logged, setLogged] = useState<string | null>(null);
-  useEffect(() => {
-    fetch("/api/food").then((r) => r.json()).then(setQuotes);
-  }, []);
-  const data = useMemo(() => compareFood(quotes, q).sort((a, b) => b.savings - a.savings), [quotes, q]);
-  const avg = data.length ? data.reduce((s, r) => s + r.savings, 0) / data.length : 0;
-  const sample = quotes.some((x) => x.restaurant.startsWith("SAMPLE"));
-  const order = (r: FoodComparison) => {
-    const best = r.quotes[0];
-    update({ expenses: [{ id: newId(), date: today(), amount: best.total, merchant: `${best.app}: ${r.restaurant}`, category: "food", paidWith: best.acceptsConveniencePoints ? "convenience points" : "card", source: "food-compare" }, ...(profile.expenses ?? [])] });
-    setLogged(r.restaurant);
-  };
-  return (
-    <div className="space-y-4">
-      {data.length > 0 && (
-        <Card className="flex items-center justify-between">
-          <span className="text-sm text-zinc-600">Average saved by picking the cheapest app</span>
-          <span className="text-xl font-bold text-green-700">{money(avg)}</span>
-        </Card>
-      )}
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search a restaurant" className="w-full rounded-xl border border-zinc-300 bg-white p-3 text-sm" />
-      {sample && <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">Sample prices. Real prices collected near campus are coming.</p>}
-      {logged && <p className="rounded-xl bg-green-50 px-3 py-2 text-xs text-green-700">Logged your {logged} order in your budget.</p>}
-      <FoodView data={data} onOrder={order} />
-    </div>
-  );
-}
-
-function Money() {
-  const params = useSearchParams();
-  const [tab, setTab] = useState<"budget" | "food">(params.get("tab") === "food" ? "food" : "budget");
-  return (
-    <div className="space-y-4">
-      <PageTitle title="Money" subtitle="Track your semester budget and pay less for delivery." />
-      <div className="flex gap-1 rounded-xl bg-zinc-200 p-1 text-sm font-semibold">
-        {(["budget", "food"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-lg py-1.5 ${tab === t ? "bg-white shadow-sm" : "text-zinc-600"}`}>
-            {t === "budget" ? "Budget" : "Cheapest delivery"}
-          </button>
-        ))}
-      </div>
-      {tab === "budget" ? <Budget /> : <Food />}
-    </div>
-  );
-}
-
 export default function MoneyPage() {
   return (
-    <Suspense>
-      <Money />
-    </Suspense>
+    <div className="space-y-4">
+      <PageTitle title="Money" subtitle="Track your semester budget and keep spending on pace." />
+      <Budget />
+    </div>
   );
 }

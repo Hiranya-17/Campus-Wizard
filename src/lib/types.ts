@@ -169,6 +169,68 @@ export interface ExtractResponse {
   engine: "gemini" | "rules";
 }
 
+// ---------- dining halls (data/dining.json, GET /api/dining) ----------
+
+/** A meal period's open/close for one weekday, minutes after midnight. null = closed that day. */
+export interface DiningHours {
+  day: Day;
+  /** Named service periods, e.g. "Breakfast" 420–660. Empty array = closed. */
+  periods: { name: string; start: Minutes; end: Minutes }[];
+}
+
+export interface DiningMenuItem {
+  name: string;
+  station: string; // "Grill", "Vegan", "Halal", "Comfort"
+  cuisine: string; // "American", "Italian", "Indian", "Mexican", "Asian", "Mediterranean", "Vegan", "Breakfast"
+  tags: string[]; // "vegan", "vegetarian", "halal", "gluten-free"
+  meals: ("breakfast" | "lunch" | "dinner")[]; // which periods serve it
+}
+
+export interface DiningHall {
+  id: string; // "west"
+  name: string; // "The Fresh Food Co. at West Campus"
+  building: string; // building code in data/buildings.json when known, else ""
+  address: string;
+  campus: "West" | "Central" | "East" | "Fenway";
+  style: string; // "All-you-care-to-eat", "Kosher"
+  payWith: string[]; // "Dining Plan Meals", "Convenience Points", "Dining Points", "Credit Cards", "Cash"
+  cuisines: string[]; // cuisines regularly available
+  features: string[]; // "Full Vegan Station", "Halal Options", "Gluten-Free Kitchen"
+  hours: DiningHours[];
+  /** Menu rotates by weekday; the API returns today's slice as `today`. */
+  menu: { day: Day; items: DiningMenuItem[] }[];
+  url: string;
+}
+
+/** One hall with today's computed status and menu, as returned by GET /api/dining. */
+export interface DiningHallToday {
+  hall: Omit<DiningHall, "menu" | "hours">;
+  hours: { name: string; start: Minutes; end: Minutes }[];
+  openNow: boolean;
+  /** The service period open right now, or the next one today, or null. */
+  currentPeriod: string | null;
+  items: DiningMenuItem[]; // today's menu
+}
+
+export interface DiningRecommendation {
+  hallId: string;
+  hallName: string;
+  items: string[]; // dishes to try there today
+  why: string; // one short sentence
+}
+
+// POST /api/dining/recommend  { cuisine, meal?, tags?, when? }
+export interface DiningRecommendRequest {
+  cuisine: string; // free text: "something spicy", "italian", "comfort food"
+  meal?: "breakfast" | "lunch" | "dinner";
+  tags?: string[]; // dietary filters: "vegan", "halal", "gluten-free"
+}
+
+export interface DiningRecommendResponse {
+  recommendations: DiningRecommendation[];
+  engine: "gemini" | "rules";
+}
+
 // ---------- food comparison ----------
 
 export interface FoodComparison {

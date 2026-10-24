@@ -85,6 +85,17 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     };
   }
 
+  if (/dining hall|dining|on campus|warren|marciano|west campus|granby|where (should|can) i eat/.test(t)) {
+    const { result } = await runTool("dining_halls", { cuisine: t.match(/\b(italian|asian|mexican|indian|mediterranean|american|vegan|vegetarian|halal|spicy|pizza|pasta)\b/)?.[1] ?? "" }, profile);
+    const r = result as { halls: { name: string; openNow: boolean; current: string | null }[]; recommendations: { hallName: string; items: string[] }[] };
+    const open = r.halls.filter((h) => h.openNow).map((h) => h.name);
+    const top = r.recommendations[0];
+    return {
+      reply: `${open.length ? `Open now: ${open.join(", ")}.` : "No dining halls are open right now."}${top ? ` Try ${top.hallName}: ${top.items.join(", ")} (sample menu).` : ""} See the Food tab for hours.`,
+      cards: [],
+    };
+  }
+
   if (/food|eat|order|deliver|doordash|uber|grubhub|cheap|pizza|burger|hungry/.test(t)) {
     const names = [...new Set(getFood().map((q) => q.restaurant))];
     const match = names.find((n) => t.includes(n.toLowerCase().split(" ")[0]));

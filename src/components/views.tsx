@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, Pill } from "@/components/ui";
 import { fmtTime, money } from "@/lib/format";
-import type { Course, Day, EventKind, FoodComparison, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
+import type { Course, Day, DiningHallToday, DiningRecommendation, EventKind, FoodComparison, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
 // ---------- semester ----------
@@ -235,6 +235,93 @@ export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: 
           {new Date(checked).toLocaleDateString("en-US", { month: "short", day: "numeric" })}.
         </p>
       )}
+    </div>
+  );
+}
+
+// ---------- dining halls ----------
+
+const MEAL_TAG_TONE: Record<string, "green" | "amber" | "zinc"> = { vegan: "green", vegetarian: "green", halal: "amber", "gluten-free": "zinc" };
+
+/** One dining hall card: open-now status, today's hours and today's menu grouped by station. */
+export function DiningHallCard({ hall }: { hall: DiningHallToday }) {
+  const byStation = hall.items.reduce<Record<string, typeof hall.items>>((acc, it) => {
+    (acc[it.station] ??= []).push(it);
+    return acc;
+  }, {});
+  return (
+    <Card className="!p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-semibold leading-tight">{hall.hall.name}</p>
+          <p className="text-xs text-zinc-500">{hall.hall.campus} Campus · {hall.hall.style}</p>
+        </div>
+        <Pill tone={hall.openNow ? "green" : "zinc"}>{hall.openNow ? "Open now" : "Closed"}</Pill>
+      </div>
+
+      <p className="mt-2 text-xs text-zinc-600">
+        {hall.hours.length === 0
+          ? "Closed today"
+          : hall.hours.map((p) => `${p.name} ${fmtTime(p.start)}–${fmtTime(p.end)}`).join(" · ")}
+      </p>
+      {hall.currentPeriod && hall.hours.length > 0 && (
+        <p className="mt-0.5 text-[11px] text-bu">{hall.openNow ? `Serving ${hall.currentPeriod} now` : `Next: ${hall.currentPeriod}`}</p>
+      )}
+
+      {hall.hall.features.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {hall.hall.features.map((f) => <Pill key={f}>{f}</Pill>)}
+        </div>
+      )}
+
+      {hall.items.length > 0 ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-xs font-semibold text-zinc-500">Sample menu</p>
+          {Object.entries(byStation).map(([station, items]) => (
+            <div key={station}>
+              <p className="text-[11px] font-semibold text-zinc-400">{station}</p>
+              <ul className="space-y-0.5">
+                {items.map((it) => (
+                  <li key={it.name} className="flex flex-wrap items-center gap-1 text-sm">
+                    <span>{it.name}</span>
+                    {it.tags.map((t) => <Pill key={t} tone={MEAL_TAG_TONE[t] ?? "zinc"}>{t}</Pill>)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-zinc-400">No menu posted for today.</p>
+      )}
+
+      <a href={hall.hall.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-medium text-bu">BU Dining page →</a>
+    </Card>
+  );
+}
+
+export function DiningView({ halls }: { halls: DiningHallToday[] }) {
+  if (halls.length === 0) return <p className="text-sm text-zinc-500">No dining halls to show.</p>;
+  return (
+    <div className="space-y-3">
+      {halls.map((h) => <DiningHallCard key={h.hall.id} hall={h} />)}
+    </div>
+  );
+}
+
+export function DiningRecommendations({ recs }: { recs: DiningRecommendation[] }) {
+  if (recs.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      {recs.map((r) => (
+        <Card key={r.hallId} className="!p-3">
+          <p className="font-semibold">{r.hallName}</p>
+          {r.why && <p className="mt-0.5 text-xs text-zinc-500">{r.why}</p>}
+          <ul className="mt-1.5 flex flex-wrap gap-1">
+            {r.items.map((it) => <li key={it}><Pill tone="red">{it}</Pill></li>)}
+          </ul>
+        </Card>
+      ))}
     </div>
   );
 }
