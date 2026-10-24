@@ -142,6 +142,30 @@ export interface FoodQuote {
   checkedAt: string; // ISO timestamp
 }
 
+// ---------- food comparison ----------
+
+export interface FoodComparison {
+  restaurant: string;
+  items: string;
+  quotes: FoodQuote[]; // cheapest first
+  cheapest: DeliveryApp;
+  savings: number; // dollars saved vs the most expensive app
+  conveniencePointsApps: DeliveryApp[];
+}
+
+// ---------- the single demo user (kept in the browser, sent with each chat) ----------
+
+export interface Profile {
+  name?: string;
+  majorId: string; // "ce"
+  standing: "freshman" | "sophomore" | "junior" | "senior";
+  term: string; // term being planned, "Spring 2027"
+  completed: string[];
+  prefs?: WeekPrefs;
+  clubs?: WeekEvent[]; // club meetings, from Gmail or typed in
+  semester?: SemesterPlanResponse; // last accepted semester plan
+}
+
 // ---------- POST /api/chat ----------
 
 export interface ChatMessage {
@@ -151,8 +175,19 @@ export interface ChatMessage {
 
 export interface ChatRequest {
   messages: ChatMessage[];
+  profile?: Profile;
 }
+
+/** Structured results the chat screen can render as cards under the reply. */
+export type ChatCard =
+  | { kind: "semester"; data: SemesterPlanResponse }
+  | { kind: "week"; data: WeekPlanResponse }
+  | { kind: "food"; data: FoodComparison[] }
+  | { kind: "course"; data: Course };
 
 export interface ChatResponse {
   reply: string;
+  cards?: ChatCard[];
+  /** "gemini" when the AI model answered, "rules" for the no-key fallback. */
+  engine: "gemini" | "rules";
 }
