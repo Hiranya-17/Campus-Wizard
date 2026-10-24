@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { buildAuthUrl, googleConfigured } from "@/lib/google/oauth";
-import { accountsUnavailable } from "@/lib/auth";
+import { accountsUnavailable, currentUser } from "@/lib/auth";
 
 // GET /api/google/auth
 // Redirects the browser to Google's OAuth consent screen.
-export async function GET() {
+// GET /api/google/auth            -> sign in (name and email only)
+// GET /api/google/auth?connect=1  -> connect Gmail & Calendar for the logged-in student
+export async function GET(req: Request) {
   const unavailable = accountsUnavailable();
   if (unavailable) return NextResponse.json({ error: unavailable }, { status: 503 });
 
@@ -15,6 +17,8 @@ export async function GET() {
     );
   }
 
-  const url = await buildAuthUrl();
+  const connect = new URL(req.url).searchParams.get("connect") === "1";
+  if (connect && !(await currentUser())) return NextResponse.redirect(new URL("/account?error=login_first", req.url));
+  const url = await buildAuthUrl(connect ? "connect" : "signin");
   return NextResponse.redirect(url);
 }

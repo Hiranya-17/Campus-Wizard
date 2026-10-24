@@ -10,9 +10,13 @@ import type { Profile } from "@/lib/types";
 
 const STANDINGS: Profile["standing"][] = ["freshman", "sophomore", "junior", "senior"];
 
-/** Shows Gmail/Calendar connection status and a disconnect button. */
+/**
+ * Gmail/Calendar connection: a "Connect" button when not connected (a separate Google permission from
+ * sign-in), or the connected status with a disconnect button.
+ */
 function GoogleConnectedCard() {
   const [connected, setConnected] = useState<boolean | null>(null);
+  const [available, setAvailable] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -20,9 +24,27 @@ function GoogleConnectedCard() {
       .then((r) => r.json())
       .then((d) => setConnected(Boolean(d.connected)))
       .catch(() => setConnected(false));
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setAvailable(Boolean(d.googleAvailable)))
+      .catch(() => setAvailable(false));
   }, []);
 
-  if (connected === null || !connected) return null; // don't show if not connected or loading
+  if (connected === null) return null; // still checking
+  if (!connected) {
+    if (!available) return null; // Google isn't configured on this server
+    return (
+      <Card className="space-y-2 text-sm">
+        <p className="font-medium">Connect Gmail &amp; Calendar</p>
+        <p className="text-xs text-zinc-500">
+          Let Rhett read club emails and order confirmations from your inbox (read-only) and add your week to Google Calendar.
+        </p>
+        <a href="/api/google/auth?connect=1" className="block w-full rounded-xl border border-zinc-300 bg-white py-2.5 text-center text-sm font-semibold">
+          Connect Gmail &amp; Calendar
+        </a>
+      </Card>
+    );
+  }
 
   const disconnect = async () => {
     setBusy(true);

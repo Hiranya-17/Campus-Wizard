@@ -31,9 +31,11 @@ export function googleConfigured(): boolean {
 const STATE_COOKIE = "rhett_oauth_state";
 const STATE_MAX_AGE = 60 * 10; // 10 minutes
 
-/** Generate a state token, persist it in a short-lived httpOnly cookie, return it. */
-export async function createOAuthState(): Promise<string> {
-  const state = crypto.randomBytes(16).toString("base64url");
+export type OAuthFlow = "signin" | "connect";
+
+/** Generate a state token (random + which flow it's for), persist it in a short-lived httpOnly cookie, return it. */
+export async function createOAuthState(flow: OAuthFlow = "signin"): Promise<string> {
+  const state = `${crypto.randomBytes(16).toString("base64url")}.${flow}`;
   (await cookies()).set(STATE_COOKIE, state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -44,43 +46,51 @@ export async function createOAuthState(): Promise<string> {
   return state;
 }
 
-/** Validate the state param and clear the cookie. Returns false if invalid. */
-export async function validateOAuthState(state: string): Promise<boolean> {
+/** Validate the state param and clear the cookie. Returns the flow it was issued for, or null if invalid. */
+export async function validateOAuthState(state: string): Promise<OAuthFlow | null> {
   const jar = await cookies();
   const stored = jar.get(STATE_COOKIE)?.value;
   jar.delete(STATE_COOKIE);
-  if (!stored) return false;
+  if (!stored) return null;
   // Timing-safe compare
-  if (stored.length !== state.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(stored), Buffer.from(state));
+  if (stored.length !== state.length) return null;
+  if (!crypto.timingSafeEqual(Buffer.from(stored), Buffer.from(state))) return null;
+  return stored.endsWith(".connect") ? "connect" : "signin";
 }
 
 // ---------------------------------------------------------------------------
 // OAuth URL builder
 // ---------------------------------------------------------------------------
 
-/** Scopes to request. Base set for sign-in + Gmail read + Calendar read/write. */
-const SCOPES = [
-  "openid",
-  "email",
-  "profile",
-  "https://www.googleapis.com/auth/gmail.readonly",
-  "https://www.googleapis.com/auth/calendar",
-].join(" ");
+/**
+ * Two separate permission requests:
+ * - sign-in asks only for name and email (Google's basic scopes): no Google review is needed, so once the app is
+ *   published anyone can use "Sign in with Google" without a warning screen;
+ * - connect asks for Gmail (restricted) and Calendar (sensitive) only when the student taps "Connect Gmail &
+ *   Calendar". Until Google verifies the app, that step works for the consent screen's test users.
+ */
+const SIGNIN_SCOPES = ["openid", "email", "profile"];
+export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
+export const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
+const CONNECT_SCOPES = [...SIGNIN_SCOPES, GMAIL_SCOPE, CALENDAR_SCOPE];
 
-export async function buildAuthUrl(): Promise<string> {
-  const state = await createOAuthState();
+export async function buildAuthUrl(flow: OAuthFlow = "signin"): Promise<string> {
+  const state = await createOAuthState(flow);
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     response_type: "code",
-    scope: SCOPES,
-    access_type: "offline",   // request refresh token
-    prompt: "consent",        // force consent so we always get a refresh token
+    scope: (flow === "connect" ? CONNECT_SCOPES : SIGNIN_SCOPES).join(" "),
     state,
+    ...(flow === "connect"
+      ? { access_type: "offline", prompt: "consent", include_granted_scopes: "true" } // refresh token for Gmail/Calendar
+      : { prompt: "select_account" }),
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 }
+
+/** Stored tokens include Gmail / Calendar access (i.e. the student went through "Connect"). */
+export const hasScope = (tokens: GoogleTokens | null, scope: string) => Boolean(tokens?.scope?.split(" ").includes(scope));
 
 // ---------------------------------------------------------------------------
 // Token exchange

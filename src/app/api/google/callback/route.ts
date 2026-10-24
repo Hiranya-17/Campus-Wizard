@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import {
   exchangeCode,
   fetchGoogleUserInfo,
+  getGoogleTokens,
   storeGoogleTokens,
   validateOAuthState,
 } from "@/lib/google/oauth";
-import { upsertGoogleUser, startSession, profileKey } from "@/lib/auth";
+import { currentUser, upsertGoogleUser, startSession, profileKey } from "@/lib/auth";
 import { getJSON, setJSON } from "@/lib/store";
 import { starterProfile } from "@/lib/demo";
 import type { Profile } from "@/lib/types";
@@ -23,14 +24,24 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/account?error=google_denied", req.url));
   }
 
-  // Validate CSRF state
-  if (!state || !code || !(await validateOAuthState(state))) {
+  // Validate CSRF state (it also says which flow this was: sign-in or connect Gmail & Calendar)
+  const flow = state && code ? await validateOAuthState(state) : null;
+  if (!flow || !code) {
     return NextResponse.redirect(new URL("/account?error=invalid_state", req.url));
   }
 
   try {
     // Exchange code for tokens
     const tokens = await exchangeCode(code);
+
+    // Connect flow: attach Gmail/Calendar access to the student who is already logged in
+    if (flow === "connect") {
+      const me = await currentUser();
+      if (!me) return NextResponse.redirect(new URL("/account?error=login_first", req.url));
+      const previous = await getGoogleTokens(me.id);
+      await storeGoogleTokens(me.id, { ...tokens, refreshToken: tokens.refreshToken ?? previous?.refreshToken ?? null });
+      return NextResponse.redirect(new URL("/account?google=connected", req.url));
+    }
 
     // Get user info from Google
     const googleUser = await fetchGoogleUserInfo(tokens.accessToken);
@@ -41,8 +52,8 @@ export async function GET(req: Request) {
     // Upsert our app user (creates or merges with existing email/password account)
     const user = await upsertGoogleUser(googleUser.sub, googleUser.email, googleUser.name);
 
-    // Store tokens so Gmail / Calendar routes can use them
-    await storeGoogleTokens(user.id, tokens);
+    // Sign-in only grants name and email, so there is nothing to store for Gmail/Calendar here;
+    // any earlier "Connect Gmail & Calendar" tokens for this account are left as they are.
 
     // Create a starter profile if one doesn't exist yet
     const existingProfile = await getJSON<Profile>(profileKey(user.id));
