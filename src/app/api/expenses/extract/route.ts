@@ -6,7 +6,7 @@ import type { ExpenseExtractRequest } from "@/lib/types";
 // POST /api/expenses/extract  ExpenseExtractRequest -> { expenses: Expense[], engine }
 // Receipt photos and order-confirmation emails become expenses.
 export async function POST(req: Request) {
-  const limited = await rateLimit(req, "receipts", 20, 600);
+  const limited = await rateLimit(req, "receipts", 150, 600);
   if (limited) return limited;
   const parsed = await readJson<ExpenseExtractRequest>(req, 4_000_000);
   if ("error" in parsed) return parsed.error;

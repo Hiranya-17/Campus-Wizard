@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const { email, password } = parsed.body;
   // Slow down password guessing: per IP, and per account from anywhere
   const limited =
-    (await rateLimit(req, "login-ip", 10, 900)) ??
+    (await rateLimit(req, "login-ip", 100, 900)) ??
     (await rateLimit(new Request("http://x", { headers: { "x-forwarded-for": "any" } }), "login-email", 10, 900, String(email ?? "").toLowerCase()));
   if (limited) return limited;
   const user = email ? await findUser(email) : null;

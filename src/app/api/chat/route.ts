@@ -7,7 +7,7 @@ import type { ChatRequest, ChatResponse } from "@/lib/types";
 
 // POST /api/chat  ChatRequest -> ChatResponse
 export async function POST(req: Request) {
-  const limited = await rateLimit(req, "chat", 40, 600);
+  const limited = await rateLimit(req, "chat", 400, 600);
   if (limited) return limited;
   const parsed = await readJson<ChatRequest>(req, 400_000);
   if ("error" in parsed) return parsed.error;

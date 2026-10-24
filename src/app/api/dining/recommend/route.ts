@@ -8,7 +8,7 @@ import type { DiningRecommendRequest } from "@/lib/types";
 // POST /api/dining/recommend  DiningRecommendRequest -> { recommendations, engine }
 // Suggests dining halls and dishes for the cuisine the student wants today.
 export async function POST(req: Request) {
-  const limited = await rateLimit(req, "dining", 30, 600);
+  const limited = await rateLimit(req, "dining", 300, 600);
   if (limited) return limited;
   const parsed = await readJson<DiningRecommendRequest>(req, 4_000);
   if ("error" in parsed) return parsed.error;

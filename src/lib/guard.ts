@@ -9,6 +9,8 @@ export function clientIp(req: Request): string {
 
 /**
  * Per-IP rate limit. Returns a 429 response when over the limit, otherwise null.
+ * Limits are generous because a whole campus network (BU Wi-Fi, the hackathon venue) can share one IP;
+ * they stop scripts running up the Gemini bill, not normal use. Login also has a strict per-account limit.
  * Protects the endpoints that spend money on the Gemini key and the login form.
  * If the counter store is unreachable, let the request through rather than break the app.
  */

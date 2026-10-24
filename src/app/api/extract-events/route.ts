@@ -6,7 +6,7 @@ import type { ExtractRequest, ExtractResponse } from "@/lib/types";
 // POST /api/extract-events  ExtractRequest -> ExtractResponse
 // Club emails (from Gmail) and syllabi (text or PDF) -> dated events, exams, deadlines.
 export async function POST(req: Request) {
-  const limited = await rateLimit(req, "extract", 20, 600);
+  const limited = await rateLimit(req, "extract", 150, 600);
   if (limited) return limited;
   const parsed = await readJson<ExtractRequest>(req, 4_000_000); // Vercel rejects bodies over 4.5 MB anyway
   if ("error" in parsed) return parsed.error;

@@ -8,7 +8,7 @@ import type { Profile } from "@/lib/types";
 export async function POST(req: Request) {
   const unavailable = accountsUnavailable();
   if (unavailable) return NextResponse.json({ error: unavailable }, { status: 503 });
-  const limited = await rateLimit(req, "signup", 5, 3600);
+  const limited = await rateLimit(req, "signup", 60, 3600);
   if (limited) return limited;
   const parsed = await readJson<{ name?: string; email?: string; password?: string; profile?: Profile }>(req, 400_000);
   if ("error" in parsed) return parsed.error;
