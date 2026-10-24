@@ -4,6 +4,14 @@ CampusWizard (called "Rhett" in the earlier specs) is a mobile-first web app for
 
 This folder holds everything Kiro produced for the project: steering docs, four specs and two agent hooks. This page explains what each piece did, what it caught, and which parts of the app were built with other tools.
 
+**How we ran Kiro:** in the **Kiro IDE**, with three of us working in it:
+
+- Hiranya Bansal: steering, plus tasks T2, T3 and T5;
+- Harsh Patel: the frontend spec;
+- Naman Shastry: Google sign-in, Gmail and Calendar, and the dining halls.
+
+We didn't use MCP servers.
+
 ## At a glance
 
 | Kiro feature | Where it is | What it did for the project |
@@ -13,12 +21,12 @@ This folder holds everything Kiro produced for the project: steering docs, four 
 | Spec + hooks | `specs/t3-agent-hooks/`, `hooks/` | A major-sheet validator and two hooks that check types, lint and degree data on every save; found 21 course codes the scrape was missing |
 | Spec: data import | `specs/t5-food-data/` | Turned the team's hand-collected delivery prices into `data/food.json`, with each data problem handled deliberately |
 | Spec: frontend | `specs/rhett-frontend/` | Requirements, design and tasks for the first polished screens, the typed API client and the accessibility pass |
-| Feature build | dining halls (commit `3fa0632`) | Dining halls with hours, open-now status, sample menus and cuisine recommendations |
-| Feature build | Google sign-in, Gmail import, Calendar export (PR #2) | OAuth 2.0 sign-in, reading club and order emails into the extractors, and exporting the week to Google Calendar |
+| Feature build (Naman) | dining halls (commit `3fa0632`) | Dining halls with hours, open-now status, sample menus and cuisine recommendations |
+| Feature build (Naman) | Google sign-in, Gmail import, Calendar export (PR #2) | OAuth 2.0 sign-in, reading club and order emails into the extractors, and exporting the week to Google Calendar |
 
 ## Steering
 
-We wrote three steering docs first (task T1), grounded in the code and in `docs/KIRO_HANDOFF.md`:
+Hiranya wrote three steering docs first (task T1), grounded in the code and in `docs/KIRO_HANDOFF.md`:
 
 - **`product.md`**: who the app is for, the default demo student (a CE sophomore), and the hackathon context.
 - **`tech.md`**: the stack and the rules that broke things when ignored:
@@ -87,7 +95,7 @@ That last decision is why the app's fee table has a "Promotions" row, so the num
 
 ### Frontend spec (rhett-frontend)
 
-`specs/rhett-frontend/` was written and carried out in Kiro by our frontend teammate. It has nine requirements:
+`specs/rhett-frontend/` was written and carried out in Kiro by Harsh Patel. It has nine requirements:
 
 - Home, the registration planner, the week planner and chat;
 - a food placeholder;
@@ -102,7 +110,9 @@ Two tasks are still open: task 9 (frontend property tests P1–P5) and task 11 (
 
 ## Features built in Kiro sessions
 
-- **Dining halls** (commit `3fa0632`, co-authored by Kiro). A Kiro session built `data/dining.json`, the dining API routes, hours with open-now status, sample menus and cuisine recommendations. It worked on a downloaded copy of the repo, and the change was then applied onto current main. The integration also gave the assistant a `dining_halls` tool.
+Both were built by Naman Shastry in the Kiro IDE.
+
+- **Dining halls** (commit `3fa0632`, co-authored by Kiro). Kiro built `data/dining.json`, the dining API routes, hours with open-now status, sample menus and cuisine recommendations. It worked on a downloaded copy of the repo, and the change was then applied onto current main. The integration also gave the assistant a `dining_halls` tool.
 - **Google sign-in, Gmail import and Google Calendar export** (PR #2, task K4 in `docs/KIRO_TASKS.md`).
   - OAuth 2.0 sign-in with token refresh and revocation;
   - reading recent emails into the event and expense extractors;
