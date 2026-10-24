@@ -15,7 +15,7 @@ const TABS = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/plan", label: "Plan", icon: "plan" },
   { href: "/week", label: "Week", icon: "week" },
-  { href: "/money", label: "Money", icon: "money" },
+  { href: "/food", label: "Food", icon: "food" },
   { href: "/chat", label: "Rhett", icon: "chat" },
 ];
 
@@ -30,9 +30,9 @@ export function BottomNav() {
             <li key={t.href}>
               <Link
                 href={t.href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-2 text-[11px] font-medium ${active ? "text-bu" : "text-zinc-500"}`}
+                className={`flex flex-col items-center gap-0.5 px-3 py-3 text-[11px] font-medium ${active ? "text-bu" : "text-zinc-500"}`}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
                   {ICONS[t.icon]}
                 </svg>
                 {t.label}
