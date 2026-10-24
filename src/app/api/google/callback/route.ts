@@ -53,7 +53,8 @@ export async function GET(req: Request) {
     // Set the session cookie (same mechanism as email/password login)
     await startSession(user);
 
-    return NextResponse.redirect(new URL("/", req.url));
+    // New accounts finish setup first (major, year, courses taken); returning users go home
+    return NextResponse.redirect(new URL(existingProfile ? "/" : "/account?setup=1", req.url));
   } catch (err) {
     console.error("[google/callback]", err);
     return NextResponse.redirect(new URL("/account?error=google_failed", req.url));

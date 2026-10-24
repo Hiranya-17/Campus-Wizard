@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CourseHistoryPicker, useUnits } from "@/components/CourseHistoryPicker";
 import { Button, Card, PageTitle } from "@/components/ui";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
@@ -63,8 +64,90 @@ function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: str
   );
 }
 
+/**
+ * First step after signing up with Google: Google gives us a name and email only, so ask for
+ * major, year, where they live and the courses they've already taken, then go plan the term.
+ */
+function FinishSetup({
+  profile, update, majors, places,
+}: {
+  profile: Profile;
+  update: (patch: Partial<Profile>) => void;
+  majors: { id: string; name: string }[];
+  places: { code: string; name: string }[];
+}) {
+  const [standingTouched, setStandingTouched] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const units = useUnits(profile.completed);
+  useEffect(() => {
+    if (!standingTouched && standingFor(units) !== profile.standing) update({ standing: standingFor(units) });
+  }, [units, standingTouched, profile.standing, update]);
+
+  const finish = async () => {
+    setSaving(true);
+    setError(null);
+    // save right away: profile edits are normally saved after a short delay, which leaving the page would cancel
+    const res = await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
+    if (!res.ok) {
+      setSaving(false);
+      return setError("Couldn't save. Check your connection and try again.");
+    }
+    window.location.href = "/plan";
+  };
+
+  return (
+    <div className="space-y-4">
+      <PageTitle title={`Welcome, ${profile.name?.split(" ")[0] ?? "Terrier"}!`} subtitle="One quick step so Rhett can plan your semester: your major, year and the courses you've already taken." />
+      <Card className="grid grid-cols-2 gap-2 text-sm">
+        <label className="col-span-2">
+          <span className="text-xs text-zinc-500">Major</span>
+          <select value={profile.majorId} onChange={(e) => update({ majorId: e.target.value })} className="mt-1 w-full rounded-lg border border-zinc-300 p-2">
+            {majors.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+        </label>
+        <label>
+          <span className="text-xs text-zinc-500">Year</span>
+          <select
+            value={profile.standing}
+            onChange={(e) => { setStandingTouched(true); update({ standing: e.target.value as Profile["standing"] }); }}
+            className="mt-1 w-full rounded-lg border border-zinc-300 p-2 capitalize"
+          >
+            {STANDINGS.map((s) => <option key={s}>{s}</option>)}
+          </select>
+        </label>
+        <label>
+          <span className="text-xs text-zinc-500">I live at</span>
+          <select value={profile.home ?? "WARREN"} onChange={(e) => update({ home: e.target.value })} className="mt-1 w-full rounded-lg border border-zinc-300 p-2">
+            {places.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
+          </select>
+        </label>
+      </Card>
+      <Card>
+        <p className="text-sm font-semibold">Courses you&apos;ve taken before this semester</p>
+        <p className="mb-3 text-xs text-zinc-500">
+          Rhett checks prerequisites against these. Don&apos;t include classes you&apos;re taking now.{units > 0 && ` ${units} units, so you're a ${profile.standing}.`}
+        </p>
+        <CourseHistoryPicker majorId={profile.majorId} value={profile.completed} onChange={(completed) => update({ completed })} />
+      </Card>
+      {error && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      <Button onClick={finish} disabled={saving}>{saving ? "Saving…" : "Continue to my schedule"}</Button>
+      <button onClick={() => { window.location.href = "/"; }} className="w-full text-center text-xs text-zinc-400">Skip for now</button>
+    </div>
+  );
+}
+
 export default function AccountPage() {
+  return (
+    <Suspense>
+      <Account />
+    </Suspense>
+  );
+}
+
+function Account() {
   const { profile, user, ready, reset, update } = useProfile();
+  const setup = useSearchParams().get("setup") === "1";
   const [mode, setMode] = useState<"login" | "signup">("signup");
   const [form, setForm] = useState({ name: "", email: "", password: "", majorId: "ce", standing: "freshman" as Profile["standing"], home: "WARREN", keepGuest: false, completed: [] as string[] });
   const [standingTouched, setStandingTouched] = useState(false);
@@ -104,6 +187,8 @@ export default function AccountPage() {
   };
 
   if (!ready) return <p className="text-sm text-zinc-400">Loading…</p>;
+
+  if (user && setup) return <FinishSetup profile={profile} update={update} majors={majors} places={places} />;
 
   if (user) {
     return (
