@@ -14,9 +14,10 @@ import { getJSON, setJSON } from "@/lib/store";
 // AUTH_SECRET            — already required by the existing email/password auth
 // ---------------------------------------------------------------------------
 
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? "";
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "";
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI ?? "";
+const CLIENT_ID = (process.env.GOOGLE_CLIENT_ID ?? "").trim();
+const CLIENT_SECRET = (process.env.GOOGLE_CLIENT_SECRET ?? "").trim();
+// accept GOOGLE_REDIRECT_URL too: an easy typo to make in the Vercel dashboard
+const REDIRECT_URI = (process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URL || "").trim();
 
 /** True when all three Google env vars are present. */
 export function googleConfigured(): boolean {
