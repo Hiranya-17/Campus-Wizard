@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Type-check and lint on save",
+  "description": "When a TypeScript source file under src/ is saved, run tsc and eslint and report any failures. Catches breakages before the pre-push gate. Never edits or commits.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/**/*.ts", "src/**/*.tsx"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A TypeScript file under src/ was just saved. Run `npx tsc --noEmit` and then `npx eslint src`. If both pass, reply with a one-line success. If either fails, show the failing output and a short summary of what to fix. Do not modify any files, do not stage, commit, or push — only run the checks and report."
+  }
+}

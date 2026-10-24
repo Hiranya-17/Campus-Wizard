@@ -1,3 +1,4 @@
+import { pickSections } from "@/lib/sections";
 import type {
   Course,
   Major,
@@ -19,13 +20,6 @@ export function missingGroups(groups: string[][], have: Set<string>): string[][]
   return groups.filter((alts) => !alts.some((code) => have.has(code)));
 }
 
-export function sectionsOverlap(a: Section, b: Section): boolean {
-  const sa = a.schedule, sb = b.schedule;
-  if (sa.start == null || sa.end == null || sb.start == null || sb.end == null) return false;
-  if (!sa.days.some((d) => sb.days.includes(d))) return false;
-  return sa.start < sb.end && sb.start < sa.end;
-}
-
 /** Terms that have any section data, newest first. */
 function availableTerms(courses: Map<string, Course>): string[] {
   const seen = new Set<string>();
@@ -35,31 +29,6 @@ function availableTerms(courses: Map<string, Course>): string[] {
     return Number(year) * 10 + (season === "Spring" ? 1 : season === "Summer" ? 2 : 3);
   };
   return [...seen].sort((a, b) => key(b) - key(a));
-}
-
-/**
- * Pick one section from each section-letter group (A = lecture, B/C/D = discussion or lab)
- * so nothing overlaps what is already chosen. Returns null if no combination fits.
- */
-export function pickSections(sections: Section[], taken: Section[]): Section[] | null {
-  const groups = new Map<string, Section[]>();
-  for (const s of sections) {
-    const letter = s.section.replace(/[^A-Z]/gi, "").slice(0, 1).toUpperCase() || "A";
-    groups.set(letter, [...(groups.get(letter) ?? []), s]);
-  }
-  const letters = [...groups.keys()].sort();
-  const chosen: Section[] = [];
-  const go = (i: number): boolean => {
-    if (i === letters.length) return true;
-    for (const s of groups.get(letters[i])!) {
-      if ([...taken, ...chosen].some((t) => sectionsOverlap(s, t))) continue;
-      chosen.push(s);
-      if (go(i + 1)) return true;
-      chosen.pop();
-    }
-    return false;
-  };
-  return go(0) ? chosen : null;
 }
 
 type Candidate = { code: string; reason: string; termIndex: number; group?: string; hub?: boolean };

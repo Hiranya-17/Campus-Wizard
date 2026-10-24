@@ -1,5 +1,5 @@
-import { accountsUnavailable, NextResponse } from "next/server";
-import { createUser, findUser, profileKey, startSession } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { accountsUnavailable, createUser, findUser, profileKey, startSession } from "@/lib/auth";
 import { setJSON } from "@/lib/store";
 import type { Profile } from "@/lib/types";
 

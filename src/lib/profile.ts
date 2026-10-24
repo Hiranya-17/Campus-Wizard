@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_BUDGET, DEFAULT_PREFS, DEMO_PROFILE } from "@/lib/demo";
 import type { Profile } from "@/lib/types";
 
-const GUEST_KEY = "rhett.profile.v1"; // demo student, kept in this browser
+const GUEST_KEY = "rhett.profile.v3"; // demo student, kept in this browser
 const ACCOUNT_KEY = "rhett.account.v1"; // cached copy of the logged-in user's profile
 
 export interface SessionUser {

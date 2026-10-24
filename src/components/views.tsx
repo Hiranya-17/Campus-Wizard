@@ -44,7 +44,7 @@ function ClassGrid({ plan }: { plan: SemesterPlanResponse }) {
   );
 }
 
-export function SemesterView({ plan }: { plan: SemesterPlanResponse }) {
+export function SemesterView({ plan, onUse }: { plan: SemesterPlanResponse; onUse?: () => void }) {
   return (
     <div className="space-y-3">
       <Card>
@@ -87,6 +87,9 @@ export function SemesterView({ plan }: { plan: SemesterPlanResponse }) {
       {plan.warnings.map((w) => (
         <p key={w} className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">{w}</p>
       ))}
+      {onUse && (
+        <button onClick={onUse} className="w-full rounded-xl bg-bu py-2 text-sm font-semibold text-white">Use this as my schedule</button>
+      )}
     </div>
   );
 }
@@ -145,7 +148,52 @@ export function EventRow({ e }: { e: WeekEvent }) {
 
 // ---------- food ----------
 
+const promoOf = (q: FoodComparison["quotes"][number]) =>
+  Math.max(0, Math.round((q.subtotal + q.deliveryFee + q.serviceFee + q.smallOrderFee + q.tax - q.total) * 100) / 100);
+
+/** Fee-by-fee table so it's clear where each app's price comes from (promotions make the columns add up). */
+function FeeTable({ r }: { r: FoodComparison }) {
+  const rows: [string, (q: FoodComparison["quotes"][number]) => number][] = [
+    ["Food", (q) => q.subtotal],
+    ["Delivery", (q) => q.deliveryFee],
+    ["Service", (q) => q.serviceFee],
+    ["Small order / bag", (q) => q.smallOrderFee],
+    ["Tax", (q) => q.tax],
+  ];
+  const promos = r.quotes.some((q) => promoOf(q) > 0.05);
+  return (
+    <table className="mt-2 w-full text-xs tabular-nums">
+      <thead>
+        <tr className="text-zinc-500">
+          <th className="py-1 text-left font-medium" />
+          {r.quotes.map((q) => <th key={q.app} className="py-1 text-right font-medium">{q.app}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(([label, get]) => (
+          <tr key={label} className="border-t border-zinc-100">
+            <td className="py-1 text-zinc-500">{label}</td>
+            {r.quotes.map((q) => <td key={q.app} className="py-1 text-right">{money(get(q))}</td>)}
+          </tr>
+        ))}
+        {promos && (
+          <tr className="border-t border-zinc-100 text-green-700">
+            <td className="py-1">Promotions</td>
+            {r.quotes.map((q) => <td key={q.app} className="py-1 text-right">{promoOf(q) > 0.05 ? `−${money(promoOf(q))}` : "—"}</td>)}
+          </tr>
+        )}
+        <tr className="border-t border-zinc-200 font-semibold">
+          <td className="py-1">Total</td>
+          {r.quotes.map((q) => <td key={q.app} className="py-1 text-right">{money(q.total)}</td>)}
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
 export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: (r: FoodComparison) => void }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const checked = data.flatMap((r) => r.quotes.map((q) => q.checkedAt)).sort().at(-1);
   return (
     <div className="space-y-3">
       {data.map((r) => (
@@ -164,12 +212,16 @@ export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: 
                   {q.app} {i === 0 && <span className="text-xs text-green-700">· cheapest</span>}
                   {q.acceptsConveniencePoints && <span className="ml-1 text-xs text-bu">· Convenience Points</span>}
                 </span>
-                <span className="tabular-nums" title={`Subtotal ${money(q.subtotal)} + delivery ${money(q.deliveryFee)} + service ${money(q.serviceFee)} + small order ${money(q.smallOrderFee)} + tax ${money(q.tax)}`}>
+                <span className="tabular-nums">
                   {money(q.total)} <span className="text-xs font-normal text-zinc-400">{q.etaMinutes}m</span>
                 </span>
               </li>
             ))}
           </ul>
+          <button onClick={() => setOpen(open === r.restaurant ? null : r.restaurant)} className="mt-1 text-xs font-medium text-zinc-500">
+            {open === r.restaurant ? "Hide fees ▲" : "Compare fees ▼"}
+          </button>
+          {open === r.restaurant && <FeeTable r={r} />}
           {onOrder && (
             <button onClick={() => onOrder(r)} className="mt-2 w-full rounded-lg border border-zinc-200 py-1.5 text-xs font-semibold text-bu">
               I ordered on {r.cheapest}: log {money(r.quotes[0].total)}
@@ -177,6 +229,12 @@ export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: 
           )}
         </Card>
       ))}
+      {checked && (
+        <p className="text-center text-[11px] text-zinc-400">
+          Same order, same address near campus. Totals include fees, tax and any promotions shown at checkout on{" "}
+          {new Date(checked).toLocaleDateString("en-US", { month: "short", day: "numeric" })}.
+        </p>
+      )}
     </div>
   );
 }
