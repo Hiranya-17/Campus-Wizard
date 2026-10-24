@@ -142,6 +142,31 @@ export interface FoodQuote {
   checkedAt: string; // ISO timestamp
 }
 
+// ---------- POST /api/extract-events ----------
+
+export interface ExtractRequest {
+  kind: "email" | "syllabus";
+  text?: string; // email body or pasted syllabus
+  pdfBase64?: string; // uploaded syllabus PDF
+  source?: string; // "BU Robotics Club newsletter", "EC 311 syllabus"
+}
+
+export interface ExtractedEvent {
+  title: string;
+  date: string | null; // "2026-11-03"; null for a weekly meeting
+  weekday: Day | null; // for recurring meetings
+  start: Minutes | null;
+  end: Minutes | null;
+  location: string | null;
+  kind: "club" | "exam" | "deadline" | "class";
+  source: string;
+}
+
+export interface ExtractResponse {
+  events: ExtractedEvent[];
+  engine: "gemini" | "rules";
+}
+
 // ---------- food comparison ----------
 
 export interface FoodComparison {

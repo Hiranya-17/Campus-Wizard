@@ -8,8 +8,11 @@ Rhett helps BU students plan registration around prerequisites and their major, 
 
 ```bash
 npm install
+echo "GEMINI_API_KEY=your-key" > .env.local   # optional: free key from aistudio.google.com/apikey
 npm run dev        # http://localhost:3000
 ```
+
+Without a key the chat still works using keyword rules ("plan my semester", "plan my week", "can I take EC 413?", "cheapest pizza").
 
 ## Who owns what
 
@@ -29,9 +32,12 @@ All shapes live in [`src/lib/types.ts`](src/lib/types.ts). Example data is in [`
 | Route / file | Returns | Status |
 | --- | --- | --- |
 | `GET /api/courses?q=logic` / `?code=ENG EC 311` | course search / one `Course` | live once `data/courses.json` is scraped |
-| `POST /api/plan/semester` | `SemesterPlanResponse` | mock |
-| `POST /api/plan/week` | `WeekPlanResponse` | mock |
-| `POST /api/chat` | `ChatResponse` | stub |
+| `GET /api/majors` / `?id=ce` | major list / one `Major` | live (CE) |
+| `POST /api/plan/semester` | `SemesterPlanResponse` | live |
+| `POST /api/plan/week` | `WeekPlanResponse` | live |
+| `POST /api/week.ics` | `.ics` calendar file (same body as `/api/plan/week`) | live |
+| `POST /api/chat` | `ChatResponse` (`reply` + `cards` to render) | live: Gemini if `GEMINI_API_KEY` is set, keyword rules otherwise |
+| `POST /api/extract-events` | `ExtractResponse` from a club email or syllabus (text or PDF) | live: Gemini or rules |
 | `GET /api/food` | `FoodQuote[]` | sample data until `data/food.json` exists |
 | `data/courses.json` | `Course[]` (all BU courses, prereqs, Fall 2026 / Spring 2027 sections) | scraping |
 | `data/majors/<id>.json` | `Major` (program planning sheet) | CE first |
