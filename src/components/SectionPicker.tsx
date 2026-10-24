@@ -45,6 +45,7 @@ export function SectionPicker({
   onPreview,
   onAdd,
   onClose,
+  onSwitchTerm,
 }: {
   course: Course;
   term: string;
@@ -53,6 +54,7 @@ export function SectionPicker({
   onPreview: (sections: Section[] | null) => void;
   onAdd: (course: PlannedCourse) => void;
   onClose: () => void;
+  onSwitchTerm?: () => void;
 }) {
   const termSections = useMemo(() => course.sections.filter((s) => s.term === term), [course, term]);
   const options = useMemo(() => sectionOptions(termSections), [termSections]);
@@ -107,6 +109,9 @@ export function SectionPicker({
       {options.length === 0 ? (
         <div className="space-y-2 text-sm text-zinc-600">
           <p>No {term} sections are posted for this course yet.</p>
+          {onSwitchTerm && course.sections.length > 0 && (
+            <button onClick={onSwitchTerm} className="w-full rounded-xl bg-bu py-2 text-sm font-semibold text-white">See its {course.sections[0].term} sections</button>
+          )}
           <button onClick={() => add([])} className="w-full rounded-xl border border-zinc-300 py-2 text-sm font-semibold">Add it anyway (times TBA)</button>
         </div>
       ) : (

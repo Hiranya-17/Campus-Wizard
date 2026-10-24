@@ -47,6 +47,7 @@ export default function PlanPage() {
   const openCourse = async (code: string) => {
     const full: Course = catalog[code] ?? (await fetch(`/api/courses?code=${encodeURIComponent(code)}`).then((r) => r.json()));
     setCatalog((m) => ({ ...m, [code]: full }));
+    setPreview(null);
     setOpen(full);
     setQ("");
     setHits([]);
@@ -75,7 +76,10 @@ export default function PlanPage() {
       </div>
 
       {term !== "Fall 2026" && (
-        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">BU hasn&apos;t posted {term} sections yet. You can still add courses; times appear once BU publishes them.</p>
+        <div className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <span className="flex-1">BU hasn&apos;t posted {term} sections yet, so there are no sections to pick.</span>
+          <button onClick={() => update({ term: "Fall 2026" })} className="shrink-0 rounded-lg bg-amber-800 px-2 py-1 font-semibold text-white">Switch to Fall 2026</button>
+        </div>
       )}
 
       <div className="relative">
@@ -104,6 +108,7 @@ export default function PlanPage() {
       {open && (
         <Card>
           <SectionPicker
+            key={open.code} // fresh picks for every course, never carried over from the last one
             course={open}
             term={term}
             schedule={schedule.courses}
@@ -111,6 +116,7 @@ export default function PlanPage() {
             onPreview={setPreview}
             onAdd={add}
             onClose={() => { setOpen(null); setPreview(null); }}
+            onSwitchTerm={term !== "Fall 2026" ? () => update({ term: "Fall 2026" }) : undefined}
           />
         </Card>
       )}
