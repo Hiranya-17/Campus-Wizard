@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Validate major sheet on change",
+  "description": "When a data/majors/*.json file changes, validate it against the Major contract (course codes exist in courses.json as warnings; elective group ids must resolve as errors).",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["data/majors/*.json"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file under data/majors/ changed. Run `node scripts/validate-majors.mjs` on the changed file (pass its path as the argument). Report the validator's output verbatim: treat its non-zero exit (undefined elective group id, unknown slot kind, bad JSON) as a failure the user must fix, and surface course-code warnings as notes. Do not modify any files or commit."
+  }
+}
