@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "validate:majors": "node scripts/validate-majors.mjs",
+    "check": "tsc --noEmit && eslint src && vitest --run && node scripts/validate-majors.mjs"
   },
   "dependencies": {
     "next": "^15.5.28",

@@ -76,7 +76,7 @@ export function CourseHistoryPicker({ majorId, value, onChange }: { majorId: str
             ))}
           </div>
         )}
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search: WR 150, PS 101, intro to psych…" className="mt-2 w-full rounded-lg border border-zinc-300 p-2 text-sm" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search: WR 151, PS 101, intro to psych…" className="mt-2 w-full rounded-lg border border-zinc-300 p-2 text-sm" />
         {hits.length > 0 && (
           <ul className="mt-1 max-h-44 overflow-y-auto rounded-lg border border-zinc-200 bg-white text-sm">
             {hits.map((h) => (

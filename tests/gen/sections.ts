@@ -111,11 +111,45 @@ export const arbMultiTimeUnit: fc.Arbitrary<Section[]> = fc
   .tuple(arbSectionRow("A1", "lecture"), arbSectionRow("A1", "discussion"))
   .map(([a, b]) => [a, b]);
 
-/** Any one of the five shapes, or a concatenation of a couple of them. */
-export const arbCourseSections: fc.Arbitrary<Section[]> = fc.oneof(
+/** Any one of the five shapes (clean: every row distinct, every row timed). */
+export const arbCleanCourseSections: fc.Arbitrary<Section[]> = fc.oneof(
   arbStandalonePool,
   arbLectureOwnedDiscussions,
   arbLectureSharedLabs,
   arbLetterSpanningPools,
   arbMultiTimeUnit,
 );
+
+/** A row with no parsed meeting time, like the ~3,600 "TBA"/irregular rows in the real data. */
+export const tbaRow = (id: string): Section => ({
+  term: "Fall 2026",
+  section: id,
+  instructor: "Staff",
+  location: "",
+  schedule: { raw: "", days: [], start: null, end: null },
+  notes: "",
+});
+
+/**
+ * What the scraper really produces: some rows repeated verbatim (BU lists e.g. CAS IN 299 A1 five times)
+ * and some rows with no time, either as extra rows of an existing section or as their own section.
+ */
+export function messy(sections: Section[]): fc.Arbitrary<Section[]> {
+  return fc
+    .record({
+      dupes: fc.array(fc.nat({ max: Math.max(0, sections.length - 1) }), { maxLength: 3 }),
+      tbaOnExisting: fc.option(fc.nat({ max: Math.max(0, sections.length - 1) }), { nil: undefined }),
+      tbaSection: fc.boolean(),
+      shuffle: fc.boolean(),
+    })
+    .map(({ dupes, tbaOnExisting, tbaSection, shuffle }) => {
+      const out = [...sections];
+      for (const i of dupes) if (sections[i]) out.push({ ...sections[i], schedule: { ...sections[i].schedule } });
+      if (tbaOnExisting !== undefined && sections[tbaOnExisting]) out.push(tbaRow(sections[tbaOnExisting].section));
+      if (tbaSection) out.push(tbaRow("X9"));
+      return shuffle ? out.reverse() : out;
+    });
+}
+
+/** The shapes above with real-data mess mixed in. All properties run against this. */
+export const arbCourseSections: fc.Arbitrary<Section[]> = arbCleanCourseSections.chain(messy);

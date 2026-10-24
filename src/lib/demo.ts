@@ -39,7 +39,7 @@ export const DEMO_PROFILE: Profile = {
   term: "Fall 2026",
   completed: [
     "CAS MA 123", "CAS CH 131", "ENG EK 100", "ENG EK 125", "CAS WR 120",
-    "CAS MA 124", "CAS PY 211", "ENG EK 131", "ENG EK 103", "CAS WR 150",
+    "CAS MA 124", "CAS PY 211", "ENG EK 131", "ENG EK 103", "CAS WR 151",
   ],
   prefs: DEFAULT_PREFS,
   home: "WARREN",

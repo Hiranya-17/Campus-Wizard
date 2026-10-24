@@ -47,10 +47,10 @@ See `.env.example`. On Vercel these are set: `GEMINI_API_KEY` (billing enabled, 
 
 | File | What | How it's made |
 | --- | --- | --- |
-| `data/courses.json` (8 MB) | 7,620 BU courses; 3,626 with Fall 2026 sections (9,577 rows). No Spring 2027 sections exist publicly yet. | `python3 scripts/scrape_bu_courses.py` (pages cached in `scripts/.cache/`). **BU rate-limits: it returned 403 at 10 parallel requests. Use `--workers 2 --delay 1.5`, or `--offline` to rebuild from cache.** |
+| `data/courses.json` (~8 MB) | Every BU course with Fall 2026 sections. No Spring 2027 sections exist publicly yet. | `python3 scripts/scrape_bu_courses.py` (pages cached in `scripts/.cache/`). It walks each college's feed **and every department's feed**, because the college-wide feed silently omits some departments (CAS Chemistry was missing until Oct 24). Identical repeated rows are dropped. Prerequisite shorthand like "WR 150/1/2/3" or "WR 150 or 151 or 152" is expanded into alternatives. **BU rate-limits: it returned 403 at 10 parallel requests. Use `--workers 2 --delay 1.2`, or `--offline` to rebuild from cache.** |
 | `data/majors/*.json` | CE (from the official planning sheet PDF), EE, ME, BME (parsed from the BU Bulletin with `scripts/build_eng_major.py`), CS BA and DS BS (hand-written from Bulletin requirement groups; order follows prerequisites) | — |
 | `data/buildings.json` | 33 BU building codes and dorms with coordinates | Geocoded with OpenStreetMap Nominatim (credit required, in README) |
-| `data/food.json` | **Does not exist yet.** `/api/food` serves sample prices (restaurant names start with `SAMPLE`) until it does. | Person D collects real prices by hand (see task T5) |
+| `data/food.json` | 8 restaurants near campus × DoorDash / Uber Eats / Grubhub, collected by hand Oct 24. Some totals are below the sum of their parts because of checkout promotions; the app shows those as a "Promotions" row. | `scripts` import from the team's sheet (Kiro spec `.kiro/specs/t5-food-data`) |
 
 ## 6. File map
 
@@ -87,6 +87,8 @@ scripts/              scrape_bu_courses.py, build_eng_major.py
    - PY 212: discussions run D1–D9, E1–E9, F1 and labs L1–L9, M1–M9, N1 — letters continue a pool, so shared companions merge **by kind (discussion/lab), not by letter**. A course never requires more than one discussion and one lab.
    - CS 111: one section id can meet at two times (A1 = MWF 10:10 and W 6:30 pm); rows with the same id are one choice ("unit").
    - Lectures are units meeting on 2+ days a week or close to the longest weekly time; discussions/labs meet once a week. When unsure, require fewer picks, never more.
+   - BU lists some rows more than once verbatim (CAS IN 299 A1 appeared five times); `units()` drops exact repeats (`sameRow`). About 3,600 rows have no parsed time ("TBA"/irregular); they never clash.
+   - CAS WR 150 is retired (404 at BU). Writing seminars are WR 151/152/153; old prerequisites that cite WR 150 are expanded to include 151–153.
 2. **The guest demo must always work without login** (judges test this way). Guest data lives in localStorage key `rhett.profile.v2`; bump the version if the demo profile changes shape.
 3. **Rhett must never break the demo:** every Gemini call falls back to `agent/rules.ts`. 503s retry with backoff; a daily-quota 429 pauses Gemini for at most 10 minutes.
 4. Components that change the profile receive `profile` and `update` from their page (one `useProfile()` per page); a second `useProfile()` in a child would hold separate state.
@@ -100,7 +102,7 @@ Done and live: course search with every section, live calendar with clash previe
 
 Known gaps:
 - Spring 2027 sections aren't published by BU; the term switch says so.
-- No automated tests yet.
+- Property-based tests (Vitest + fast-check) cover `sections.ts` and `schedule.ts` against generated messy data and every real course: `npm test`. `npm run check` runs typecheck, lint, tests and the major-file validator together.
 - `src/mocks/` is leftover from the first scaffold; only `sampleFood` is still used.
 - The name "Rhett" is BU's trademarked mascot; the team may rename the app before recording the video (pending decision).
 
@@ -121,7 +123,9 @@ Each task maps to a Kiro capability the judges score. Keep the steering docs, sp
 - **T6. Onboarding and UI polish (spec; owner B).** First-visit intro explaining guest demo vs. account, empty states, loading skeletons, accessibility pass (labels, focus states, color contrast), app name/logo if renamed.
 - **T7. Google Calendar sync (optional).** Push the planned week to Google Calendar; the .ics download stays as fallback.
 
-Before each push: `npx tsc --noEmit && npx eslint src && npm run build`, then check the live site after deploy.
+Done in Kiro on Oct 24: T1 steering, T2 property tests, T3 hooks, T5 food data.
+
+Before each push: `npm run check && npm run build`, then check the live site after deploy.
 
 ## 10. Submission checklist
 

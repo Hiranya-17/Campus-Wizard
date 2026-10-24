@@ -1,7 +1,7 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import type { Section } from "@/lib/types";
-import { pickSections, sectionOptions, sectionsOverlap, units } from "@/lib/sections";
+import { pickSections, sameRow, sectionOptions, sectionsOverlap, units } from "@/lib/sections";
 import { arbCourseSections, arbSectionRow } from "./gen/sections";
 import { coursesWithSections } from "./config/courses";
 
@@ -87,11 +87,26 @@ describe("Property 3: unit identity (ids partition the input)", () => {
     if (new Set(unitIds).size !== unitIds.length) return false;
     const inputIds = new Set(sections.map((s) => s.section));
     if (new Set(unitIds).size !== inputIds.size) return false;
+    // every distinct row is kept exactly once (verbatim repeats collapse into one)
+    const distinct = sections.filter((s, i) => sections.findIndex((t) => sameRow(s, t)) === i).length;
     const rowCount = us.reduce((n, u) => n + u.length, 0);
-    return rowCount === sections.length;
+    return rowCount === distinct;
   };
 
   it("generated", () => {
+    fc.assert(fc.property(arbCourseSections, (s) => check(s)), RUNS);
+  });
+
+  it("real data", () => {
+    for (const c of coursesWithSections()) expect(check(c.sections), c.code).toBe(true);
+  });
+});
+
+describe("Property 3b: no unit lists the same meeting twice", () => {
+  const check = (sections: Section[]) =>
+    units(sections).every((u) => u.every((r, i) => u.findIndex((t) => sameRow(r, t)) === i));
+
+  it("generated (with duplicated rows mixed in)", () => {
     fc.assert(fc.property(arbCourseSections, (s) => check(s)), RUNS);
   });
 

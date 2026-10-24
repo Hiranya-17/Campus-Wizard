@@ -21,9 +21,17 @@ export const unitMinutes = (u: Unit) => u.reduce((m, s) => m + minutes(s), 0);
 
 const letter = (u: Unit) => u[0].section.replace(/[^A-Z]/gi, "").slice(0, 1).toUpperCase() || "A";
 
+/** Same section id, term, time and room: BU sometimes lists a row more than once. */
+export const sameRow = (a: Section, b: Section) =>
+  a.section === b.section && a.term === b.term && a.schedule.raw === b.schedule.raw && a.location === b.location;
+
 export function units(sections: Section[]): Unit[] {
   const byId = new Map<string, Unit>();
-  for (const s of sections) byId.set(s.section, [...(byId.get(s.section) ?? []), s]);
+  for (const s of sections) {
+    const unit = byId.get(s.section) ?? [];
+    if (!unit.some((r) => sameRow(r, s))) unit.push(s); // drop exact duplicates
+    byId.set(s.section, unit);
+  }
   return [...byId.values()];
 }
 
