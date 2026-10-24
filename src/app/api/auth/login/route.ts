@@ -1,5 +1,5 @@
-import { accountsUnavailable, NextResponse } from "next/server";
-import { checkPassword, findUser, startSession } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { accountsUnavailable, checkPassword, findUser, startSession } from "@/lib/auth";
 
 // POST /api/auth/login { email, password } -> { user }
 export async function POST(req: Request) {
