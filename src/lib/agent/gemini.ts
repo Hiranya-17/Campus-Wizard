@@ -2,7 +2,7 @@ import "server-only";
 import type { ChatCard, ChatMessage, Profile } from "@/lib/types";
 import { TOOL_DECLARATIONS, runTool } from "@/lib/agent/tools";
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
 const URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 type Part = { text?: string; functionCall?: { name: string; args?: Record<string, unknown> }; functionResponse?: unknown };
@@ -32,6 +32,7 @@ export async function runGemini(messages: ChatMessage[], profile: Profile): Prom
     const res = await fetch(`${URL}?key=${key}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(25000), // fall back to rules rather than hang the demo
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt(profile) }] },
         contents,

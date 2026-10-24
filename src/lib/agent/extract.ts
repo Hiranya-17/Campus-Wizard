@@ -2,7 +2,7 @@ import "server-only";
 import type { Day, ExtractRequest, ExtractedEvent } from "@/lib/types";
 import { DAYS } from "@/lib/types";
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
 
 const SCHEMA = {
   type: "array",
@@ -36,6 +36,7 @@ export async function extractWithGemini(req: ExtractRequest): Promise<ExtractedE
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(25000), // fall back to rules rather than hang the demo
       body: JSON.stringify({
         contents: [{ role: "user", parts }],
         generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA },
