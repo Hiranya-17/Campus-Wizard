@@ -54,7 +54,13 @@ export function ChatPanel({
       setTurns([...next, { role: "assistant", content: data.reply, cards: data.cards }]);
       apply(data.cards);
     } catch (err) {
-      setError(err instanceof ApiError && err.status ? `Rhett hit a server error (${err.status}). Try again.` : "Couldn't reach Rhett. Check your connection and try again.");
+      setError(
+        err instanceof ApiError && err.status === 429
+          ? "You're sending messages quickly. Wait a few minutes and try again."
+          : err instanceof ApiError && err.status
+            ? `Rhett hit a server error (${err.status}). Try again.`
+            : "Couldn't reach Rhett. Check your connection and try again.",
+      );
     }
     setBusy(false);
   };

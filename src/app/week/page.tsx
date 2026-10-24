@@ -133,6 +133,7 @@ export default function WeekPage() {
           placeholder="Paste a club newsletter or syllabus. Rhett pulls out meetings, exams and deadlines."
           className="mt-3 w-full rounded-lg border border-zinc-300 p-2 text-xs"
         />
+        <p className="mt-1 text-[11px] text-zinc-400">Pasted text is sent to Google Gemini to find the events; we keep only the events you add.</p>
         <div className="mt-2">
           <Button variant="secondary" onClick={extract} disabled={!paste.trim() || extracting}>{extracting ? "Reading…" : "Find events"}</Button>
         </div>

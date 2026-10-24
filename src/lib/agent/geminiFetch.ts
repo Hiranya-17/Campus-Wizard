@@ -8,11 +8,12 @@ let quotaResetAt = 0;
 /** POST to Gemini generateContent, retrying when it's briefly overloaded (503/429). */
 export async function geminiGenerate(body: unknown): Promise<{ candidates?: { content?: { role: "model"; parts: Record<string, unknown>[] } }[] }> {
   if (Date.now() < quotaResetAt) throw new Error("Gemini daily quota used up; using rules until it resets");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  // key goes in a header, not the URL, so it can't end up in logged URLs or error messages
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY ?? "" },
       signal: AbortSignal.timeout(25000), // fall back to rules rather than hang the demo
       body: JSON.stringify(body),
     });

@@ -18,6 +18,8 @@ export function getCourses(): Map<string, Course> {
 }
 
 export function getMajor(id: string): Major | null {
+  // ids come from requests: only plain names, so "../" can never reach other files
+  if (typeof id !== "string" || !/^[a-z0-9-]{1,32}$/.test(id)) return null;
   const file = path.join(DATA, "majors", `${id}.json`);
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : null;
 }

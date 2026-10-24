@@ -12,13 +12,28 @@ import { CATEGORIES } from "@/lib/types";
 const newId = () => `m${Date.now().toString(36)}`;
 const today = () => new Date().toLocaleDateString("en-CA");
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result).split(",")[1]);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+/**
+ * Read a photo as base64 JPEG, scaled to at most 1600px. Phone photos are often 4-7 MB once encoded,
+ * over Vercel's 4.5 MB request limit; scaled down they're a few hundred KB and still easy to read.
+ */
+async function photoToBase64(file: File): Promise<{ data: string; mimeType: string }> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = url;
+    });
+    const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return { data: canvas.toDataURL("image/jpeg", 0.85).split(",")[1], mimeType: "image/jpeg" };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 function Budget() {
@@ -43,7 +58,13 @@ function Budget() {
 
   const onPhoto = async (file?: File) => {
     if (!file) return;
-    await extract({ imageBase64: await fileToBase64(file), mimeType: file.type || "image/jpeg" });
+    try {
+      const { data, mimeType } = await photoToBase64(file);
+      await extract({ imageBase64: data, mimeType });
+    } catch {
+      setBusy(false);
+      alert("Couldn't read that photo. Try another one, or paste the receipt email instead.");
+    }
   };
 
   return (
@@ -56,6 +77,7 @@ function Budget() {
         <Button onClick={() => fileRef.current?.click()} disabled={busy}>{busy ? "Reading…" : "📷 Snap a receipt"}</Button>
         <textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={2} placeholder="…or paste an order confirmation email (DoorDash, Amazon, MBTA)" className="w-full rounded-lg border border-zinc-300 p-2 text-xs" />
         <Button variant="secondary" disabled={busy || !paste.trim()} onClick={() => extract({ text: paste })}>Read email</Button>
+        <p className="text-[11px] text-zinc-400">Photos and emails are sent to Google Gemini to read the total; we keep only the purchase you add, not the photo or email.</p>
         {found.length > 0 && (
           <ul className="space-y-1">
             {found.map((e) => (
