@@ -133,7 +133,7 @@ function Food() {
   const [tab, setTab] = useState<"dining" | "delivery">(params.get("tab") === "delivery" ? "delivery" : "dining");
   return (
     <div className="space-y-4">
-      <PageTitle title="Food" subtitle="Find a dining hall, see today's menu, or pay less for delivery." />
+      <PageTitle title="A break worth taking." subtitle="Dining halls open now, and the cheapest way to get delivery." />
       <div className="flex gap-1 rounded-xl bg-zinc-200 p-1 text-sm font-semibold">
         {(["dining", "delivery"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-lg py-1.5 ${tab === t ? "bg-white shadow-sm" : "text-zinc-600"}`}>

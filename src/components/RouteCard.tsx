@@ -83,7 +83,8 @@ export function RouteCard({ events, home, onHomeChange }: { events: WeekEvent[];
 
   return (
     <Card className="!p-0 overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-zinc-100 px-4 py-2 text-xs">
+      <h2 className="px-5 pt-5 text-[17px] font-semibold">Getting to class</h2>
+      <div className="flex items-center gap-2 px-5 pb-3 pt-1 text-xs">
         <span className="text-zinc-500">Starting from</span>
         <select value={home} onChange={(e) => onHomeChange(e.target.value)} className="min-w-0 flex-1 rounded-md border border-zinc-200 px-1 py-0.5">
           {places.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
@@ -91,23 +92,23 @@ export function RouteCard({ events, home, onHomeChange }: { events: WeekEvent[];
       </div>
 
       {legs === null ? (
-        <p className="p-4 text-sm text-zinc-400">Checking the T…</p>
+        <p role="status" className="px-5 pb-4 text-sm text-zinc-400">Checking the T…</p>
       ) : !next ? (
-        <p className="p-4 text-sm text-zinc-500">No more classes today.</p>
+        <p className="px-5 pb-4 text-sm text-zinc-500">No more classes today. Enjoy the evening.</p>
       ) : (
         <>
-          <div className="bg-bu px-4 py-3 text-white">
-            <p className="text-xs opacity-80">{isToday ? "Next" : `${day}'s first class`}</p>
-            <p className="text-2xl font-bold">Leave by {fmtTime(next.leaveBy)}</p>
+          <div className="mx-4 mb-3 rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-zinc-900">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-bu">{isToday ? "Next" : `${day}'s first class`}</p>
+            <p className="text-2xl font-bold tracking-tight">Leave by {fmtTime(next.leaveBy)}</p>
             <p className="text-sm">
               {next.to} · {next.toPlace} at {fmtTime(next.arriveBy)}
             </p>
-            <p className="mt-1 text-xs opacity-90">
+            <p className="mt-1 text-xs text-zinc-600">
               {next.transit
-                ? `🚋 Green Line ${next.transit.direction} from ${next.transit.board} at ${fmtTime(next.transit.departs)}${next.transit.live ? " (live)" : ""} → ${next.transit.alight}`
-                : `🚶 ${next.walkMinutes} min walk from ${next.fromPlace}`}
+                ? `Green Line ${next.transit.direction} from ${next.transit.board} at ${fmtTime(next.transit.departs)}${next.transit.live ? " (live)" : ""} → ${next.transit.alight}`
+                : `${next.walkMinutes} min walk from ${next.fromPlace}`}
             </p>
-            {(next.weather || next.note) && <p className="mt-1 text-xs opacity-90">{[next.weather, next.note].filter(Boolean).join(" · ")}</p>}
+            {(next.weather || next.note) && <p className="mt-1 text-xs text-zinc-500">{[next.weather, next.note].filter(Boolean).join(" · ")}</p>}
           </div>
           <ul className="divide-y divide-zinc-100">
             {upcoming.slice(1).map((l) => (

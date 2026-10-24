@@ -46,11 +46,11 @@ export function GmailScan({ onAdd }: { onAdd: (e: ExtractedEvent) => void }) {
       <p className="text-sm font-semibold">Find club meetings in your Gmail</p>
       {!state.loggedIn ? (
         <p className="text-xs text-zinc-500">
-          <a href="/account" className="font-semibold text-bu">Log in</a> and connect Gmail, and Rhett will search your inbox for club meetings for you.
+          <a href="/account" className="font-semibold text-bu">Log in</a> and connect Gmail, and CampusWizard will search your inbox for club meetings for you.
         </p>
       ) : !state.connected ? (
         <>
-          <p className="text-xs text-zinc-500">Connect Gmail (read-only) and Rhett will search your recent club and event emails for meetings.</p>
+          <p className="text-xs text-zinc-500">Connect Gmail (read-only) and CampusWizard will search your recent club and event emails for meetings.</p>
           <a href="/api/google/auth?connect=1" className="block w-full rounded-xl border border-zinc-300 bg-white py-2.5 text-center text-sm font-semibold">
             Connect Gmail to scan your inbox
           </a>

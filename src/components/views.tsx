@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Card, Pill } from "@/components/ui";
+import { IconCalendar, IconPin } from "@/components/icons";
+import { Card, EmptyState, Pill } from "@/components/ui";
 import { fmtTime, money } from "@/lib/format";
 import type { Course, Day, DiningHallToday, DiningRecommendation, EventKind, FoodComparison, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
 import { DAYS } from "@/lib/types";
@@ -96,49 +97,125 @@ export function SemesterView({ plan, onUse }: { plan: SemesterPlanResponse; onUs
 
 // ---------- week ----------
 
-const KIND_STYLE: Record<EventKind, string> = {
-  class: "border-l-red-500 bg-red-50",
-  club: "border-l-violet-500 bg-violet-50",
-  exam: "border-l-orange-500 bg-orange-50",
-  study: "border-l-sky-500 bg-sky-50",
-  gym: "border-l-emerald-500 bg-emerald-50",
-  meal: "border-l-amber-400 bg-amber-50",
-  task: "border-l-pink-500 bg-pink-50",
-  sleep: "border-l-zinc-400 bg-zinc-100",
-  travel: "border-l-zinc-400 bg-zinc-50",
+const KIND_STYLE: Record<EventKind, { card: string; label: string; text: string }> = {
+  class: { card: "border-sky-500 bg-sky-50", label: "Class", text: "text-sky-800" },
+  club: { card: "border-violet-500 bg-violet-50", label: "Club", text: "text-violet-800" },
+  exam: { card: "border-red-500 bg-red-50", label: "Exam", text: "text-red-800" },
+  study: { card: "border-indigo-400 bg-indigo-50/70", label: "Study", text: "text-indigo-800" },
+  gym: { card: "border-emerald-500 bg-emerald-50", label: "Exercise", text: "text-emerald-800" },
+  meal: { card: "border-amber-400 bg-amber-50", label: "Meal", text: "text-amber-800" },
+  task: { card: "border-pink-500 bg-pink-50", label: "To-do", text: "text-pink-800" },
+  sleep: { card: "border-zinc-300 bg-zinc-50", label: "Sleep", text: "text-zinc-600" },
+  travel: { card: "border-zinc-300 bg-zinc-50", label: "Travel", text: "text-zinc-600" },
 };
 
+const dateOf = (weekOf: string, i: number) => {
+  const [y, m, d] = weekOf.split("-").map(Number);
+  return new Date(y, m - 1, d + i);
+};
+const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+const freeLabel = (mins: number) => (mins < 60 ? `${mins} minutes` : `${Math.floor(mins / 60)}h${mins % 60 ? ` ${mins % 60}m` : ""}`);
+
+/** "Your week, in perspective": day strip, a timeline for the chosen day, and a balanced-week summary. */
 export function WeekView({ plan }: { plan: WeekPlanResponse }) {
-  const todayIdx = (new Date().getDay() + 6) % 7;
-  const [day, setDay] = useState<Day>(DAYS[todayIdx]);
-  const events = plan.events.filter((e) => e.day === day);
+  const today = new Date();
+  const todayIdx = DAYS.findIndex((_, i) => plan.weekOf && sameDay(dateOf(plan.weekOf, i), today));
+  const [day, setDay] = useState<Day>(DAYS[todayIdx >= 0 ? todayIdx : 0]);
+  const di = DAYS.indexOf(day);
+  const date = plan.weekOf ? dateOf(plan.weekOf, di) : null;
+  const isToday = date ? sameDay(date, today) : false;
+  const nowMin = today.getHours() * 60 + today.getMinutes();
+  const events = plan.events.filter((e) => e.day === day && e.kind !== "sleep").sort((a, b) => a.start - b.start);
+  const sleep = plan.events.find((e) => e.day === day && e.kind === "sleep");
+
+  const hours = (k: EventKind) => plan.events.filter((e) => e.kind === k).reduce((m, e) => m + (e.end - e.start), 0) / 60;
+  const stats = [
+    [String(plan.events.filter((e) => e.kind === "class").length), "Class sessions"],
+    [`${Math.round(hours("class") * 10) / 10}h`, "In class"],
+    [`${Math.round(hours("study") * 10) / 10}h`, "Study"],
+    [String(plan.events.filter((e) => e.kind === "task" || e.kind === "gym").length), "To-dos"],
+  ];
+
   return (
-    <div className="space-y-3">
-      <div className="flex gap-1 overflow-x-auto">
-        {DAYS.map((d) => (
-          <button
-            key={d}
-            onClick={() => setDay(d)}
-            className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-semibold ${d === day ? "bg-bu text-white" : "bg-white text-zinc-600 border border-zinc-200"}`}
-          >
-            {d}
-          </button>
-        ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-7 gap-1.5" role="tablist" aria-label="Day of the week">
+        {DAYS.map((d, i) => {
+          const dd = plan.weekOf ? dateOf(plan.weekOf, i) : null;
+          const sel = d === day;
+          return (
+            <button
+              key={d}
+              role="tab"
+              aria-selected={sel}
+              onClick={() => setDay(d)}
+              className={`flex min-h-14 flex-col items-center justify-center rounded-xl text-xs transition-colors duration-150 ${sel ? "bg-bu text-white shadow-sm" : "border border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300"}`}
+            >
+              <span className={sel ? "text-white/85" : ""}>{d}</span>
+              <span className={`text-base font-bold ${sel ? "" : "text-zinc-900"}`}>{dd ? dd.getDate() : ""}</span>
+            </button>
+          );
+        })}
       </div>
-      <ul className="space-y-1.5">
-        {events.map((e) => <EventRow key={e.id} e={e} />)}
-        {events.length === 0 && <li className="text-sm text-zinc-500">Nothing planned.</li>}
-      </ul>
-      {plan.unscheduled.length > 0 && (
-        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">Couldn&apos;t fit: {plan.unscheduled.join(", ")}</p>
+
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">{date ? date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) : day}</h3>
+        {isToday && <span className="rounded-md bg-red-50 px-2 py-0.5 text-xs font-semibold text-bu">Today</span>}
+      </div>
+
+      {events.length === 0 ? (
+        <Card><EmptyState icon={<IconCalendar size={20} />} title="An open day ahead." body="Nothing is scheduled for this day." /></Card>
+      ) : (
+        <ol className="space-y-2">
+          {events.map((e, i) => {
+            const st = KIND_STYLE[e.kind];
+            const prev = events[i - 1];
+            const free = prev ? e.start - prev.end : 0;
+            const showNow = isToday && nowMin >= (prev?.end ?? 0) && nowMin < e.start;
+            return (
+              <li key={e.id}>
+                {free >= 45 && <p className="mb-2 pl-16 text-xs text-zinc-400">{freeLabel(free)} free · A moment to reset</p>}
+                {showNow && (
+                  <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold text-bu" aria-label="Current time">
+                    <span className="w-14 text-right">{fmtTime(nowMin)}</span><span className="h-px flex-1 bg-bu" />
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <span className="w-14 shrink-0 pt-2 text-right text-xs font-semibold leading-tight text-zinc-800">
+                    {fmtTime(e.start).replace(/ (am|pm)/, "")}
+                    <span className="block text-[10px] font-normal text-zinc-400">{fmtTime(e.start).slice(-2).toUpperCase()}</span>
+                  </span>
+                  <div className={`flex-1 rounded-xl border-l-[3px] px-3.5 py-2.5 ${st.card}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${st.text}`}>{st.label}</p>
+                    <p className="font-semibold text-zinc-900">{e.title}</p>
+                    <p className={`text-xs ${st.text}`}>{fmtTime(e.start)} – {fmtTime(e.end)}</p>
+                    {e.location && <p className={`mt-0.5 flex items-center gap-1 text-xs ${st.text}`}><IconPin size={13} /> {e.location}</p>}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       )}
+      {sleep && <p className="pl-16 text-xs text-zinc-400">Lights out by {fmtTime(sleep.start)} for a full night&apos;s sleep.</p>}
+
+      {plan.unscheduled.length > 0 && (
+        <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800">Couldn&apos;t fit this week: {plan.unscheduled.join(", ")}. Try fewer study hours or to-dos.</p>
+      )}
+
+      <Card className="!p-5">
+        <p className="mb-3 flex items-center gap-2 font-semibold"><span className="text-bu">▮▮▮</span> A balanced view of your week</p>
+        <div className="grid grid-cols-4 gap-2">
+          {stats.map(([n, l]) => <div key={l}><p className="text-xl font-bold tracking-tight">{n}</p><p className="text-[11px] text-zinc-500">{l}</p></div>)}
+        </div>
+      </Card>
     </div>
   );
 }
 
 export function EventRow({ e }: { e: WeekEvent }) {
+  const st = KIND_STYLE[e.kind];
   return (
-    <li className={`flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 ${KIND_STYLE[e.kind]}`}>
+    <li className={`flex items-center gap-3 rounded-lg border-l-[3px] px-3 py-2 ${st.card}`}>
       <span className="w-[68px] shrink-0 text-xs tabular-nums text-zinc-500">{fmtTime(e.start)}</span>
       <span className="text-sm font-medium">{e.title}</span>
       {e.location && <span className="ml-auto text-xs text-zinc-500">{e.location}</span>}

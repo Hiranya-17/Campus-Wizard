@@ -344,7 +344,7 @@ export interface ChatRequest {
 /** Structured results the chat screen can render as cards under the reply. */
 export type ChatCard =
   | { kind: "semester"; data: SemesterPlanResponse } // a suggestion: shown with "Use this schedule"
-  | { kind: "schedule"; data: SemesterPlanResponse } // Rhett changed the student's schedule: applied right away
+  | { kind: "schedule"; data: SemesterPlanResponse } // CampusWizard changed the student's schedule: applied right away
   | { kind: "week"; data: WeekPlanResponse }
   | { kind: "food"; data: FoodComparison[] }
   | { kind: "course"; data: Course }

@@ -149,7 +149,7 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "list_majors",
-    description: "Majors Rhett has program planning sheets for.",
+    description: "Majors CampusWizard has program planning sheets for.",
     parameters: { type: "object", properties: {} },
   },
 ];
@@ -213,7 +213,7 @@ export async function runTool(name: string, args: Args, profile: Profile): Promi
         picked = termSections.length ? pickSections(termSections, others) : [];
         if (!picked) return { result: { error: `Every ${c.code} section clashes with your current classes. Remove or move one first.` } };
       }
-      const next = withCourse(schedule, { code: c.code, title: c.title, units: unitsOf(c), reason: "Added by Rhett", sections: picked });
+      const next = withCourse(schedule, { code: c.code, title: c.title, units: unitsOf(c), reason: "Added by CampusWizard", sections: picked });
       return {
         result: {
           added: c.code,

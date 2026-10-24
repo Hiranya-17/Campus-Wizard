@@ -1,9 +1,9 @@
 {
-  "name": "Rhett - BU student assistant",
-  "short_name": "Rhett",
+  "name": "CampusWizard - BU student assistant",
+  "short_name": "CampusWizard",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f6f7",
-  "theme_color": "#cc0000",
+  "theme_color": "#f7f7f5",
   "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
 }

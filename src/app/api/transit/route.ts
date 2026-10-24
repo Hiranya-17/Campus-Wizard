@@ -8,7 +8,7 @@ function bostonNow(): number {
 }
 
 // POST /api/transit  { from: "WARREN", stops: RouteStop[], now?: minutes } -> { legs, weather, now }
-// GET  /api/transit  -> places Rhett knows (for "where do you live" pickers)
+// GET  /api/transit  -> places CampusWizard knows (for "where do you live" pickers)
 export async function POST(req: Request) {
   const { from = "WARREN", stops = [], now } = (await req.json()) as { from?: string; stops?: RouteStop[]; now?: number };
   const at = now ?? bostonNow();

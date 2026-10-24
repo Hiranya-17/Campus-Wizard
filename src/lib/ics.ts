@@ -10,7 +10,7 @@ export function toIcs(weekOf: string, events: WeekEvent[]): string {
     const date = new Date(Date.UTC(y, m - 1, d + DAYS.indexOf(day as never)));
     return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(Math.floor(minutes / 60) % 24)}${pad(minutes % 60)}00`;
   };
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Rhett//BU Week Planner//EN", "CALSCALE:GREGORIAN"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//CampusWizard//BU Week Planner//EN", "CALSCALE:GREGORIAN"];
   for (const e of events) {
     if (e.kind === "sleep") continue;
     lines.push(
@@ -37,7 +37,7 @@ export function toIcs(weekOf: string, events: WeekEvent[]): string {
 export function assignmentsToIcs(items: Assignment[]): string {
   const stamp = (date: string, minutes: number) => `${date.replace(/-/g, "")}T${pad(Math.floor(minutes / 60))}${pad(minutes % 60)}00`;
   const esc = (s: string) => s.replace(/[\\,;]/g, (c) => `\\${c}`).replace(/\n/g, " ");
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Rhett//BU Syllabus//EN", "CALSCALE:GREGORIAN"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//CampusWizard//BU Syllabus//EN", "CALSCALE:GREGORIAN"];
   for (const a of items) {
     const isTest = a.kind === "exam" || a.kind === "quiz";
     const start = a.time ?? 23 * 60; // due at end of day

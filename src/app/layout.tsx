@@ -1,36 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import { BottomNav } from "@/components/BottomNav";
 import { HeaderAccount } from "@/components/HeaderAccount";
+import { WorkspaceTour } from "@/components/WorkspaceTour";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Rhett · BU student assistant",
-  description: "Plan registration, your week and your food spending at Boston University.",
+  title: "CampusWizard · Your semester, thoughtfully organized",
+  description: "Plan registration, your week, getting to class, exams, food and money at Boston University.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Rhett", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "CampusWizard", statusBarStyle: "default" },
 };
 
-export const viewport: Viewport = { themeColor: "#cc0000", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#f7f7f5", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} font-sans antialiased`}>
-        <header className="sticky top-0 z-20 bg-bu text-white">
-          <div className="mx-auto flex max-w-md items-center gap-2 px-4 py-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-sm font-black text-bu">R</span>
-              <span className="text-lg font-bold">Rhett</span>
-            </Link>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/95 backdrop-blur">
+          <div className="mx-auto flex max-w-md items-center px-4 py-2.5">
             <HeaderAccount />
           </div>
         </header>
-        <main className="mx-auto max-w-md px-4 pt-4 pb-28">{children}</main>
+        <main className="mx-auto max-w-md px-4 pt-6 pb-28">{children}</main>
         <BottomNav />
+        <WorkspaceTour />
       </body>
     </html>
   );

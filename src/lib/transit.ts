@@ -128,7 +128,7 @@ export async function planRoute(fromCode: string, stops: RouteStop[], now: Minut
   for (const stop of [...stops].sort((a, b) => a.start - b.start)) {
     const to = placeFor(stop.location);
     if (!to) {
-      legs.push({ to: stop.title, toPlace: stop.location ?? "Unknown", fromPlace: from.name, arriveBy: stop.start, leaveBy: stop.start - 10 - BUFFER, mode: "walk", walkMinutes: 10, note: "Building not on Rhett's map yet; assuming a 10 minute walk." });
+      legs.push({ to: stop.title, toPlace: stop.location ?? "Unknown", fromPlace: from.name, arriveBy: stop.start, leaveBy: stop.start - 10 - BUFFER, mode: "walk", walkMinutes: 10, note: "Building not on CampusWizard's map yet; assuming a 10 minute walk." });
       continue;
     }
     const walk = walkMinutes(from, to);

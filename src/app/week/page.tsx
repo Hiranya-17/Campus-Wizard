@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Button, Card, PageTitle, Pill } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Button, Card, PageTitle, Pill, Skeleton } from "@/components/ui";
 import { GmailScan } from "@/components/GmailScan";
 import { CalendarExport } from "@/components/CalendarExport";
 import { WeekView } from "@/components/views";
@@ -35,7 +35,7 @@ const errorText = (err: unknown) =>
   err instanceof ApiError && err.status ? `Server error (${err.status}). Please try again.` : "Couldn't reach the server. Check your connection and try again.";
 
 export default function WeekPage() {
-  const { profile, update } = useProfile();
+  const { profile, update, ready } = useProfile();
   const prefs = profile.prefs ?? DEFAULT_PREFS;
   const setPrefs = (patch: Partial<WeekPrefs>) => update({ prefs: { ...prefs, ...patch } });
   const [plan, setPlan] = useState<WeekPlanResponse | null>(null);
@@ -117,14 +117,45 @@ export default function WeekPage() {
 
   const classes = profile.semester?.courses.length ?? 0;
 
+  // show the week straight away once the profile has loaded; "Update my week" re-plans after changes
+  useEffect(() => {
+    if (ready && !plan) build();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  const weekLabel = (() => {
+    const [y, m, d] = nextMonday().split("-").map(Number);
+    const mon = new Date(y, m - 1, d), sun = new Date(y, m - 1, d + 6);
+    const f = (x: Date) => x.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return `${f(mon)} – ${f(sun)}`;
+  })();
+
   return (
     <div className="space-y-4">
-      <PageTitle title="Plan my week" subtitle="Rhett fits sleep, meals, study and your weekly to-dos around classes and clubs." />
+      <PageTitle title="Your week, in perspective." subtitle={`${weekLabel} · Your classes, clubs, study time and to-dos, planned together.`} />
+
+      {error && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {plan ? (
+        <>
+          <WeekView plan={plan} />
+          {/* CalendarExport renders only when Google is connected; shows a
+              preview + confirm flow before exporting. */}
+          <CalendarExport weekOf={plan.weekOf} events={plan.events} />
+          <Button variant="secondary" onClick={downloadIcs}>Add to Google / Apple Calendar (.ics)</Button>
+        </>
+      ) : (
+        <Card><Skeleton rows={4} label="Planning your week…" /></Card>
+      )}
+
+      <div className="pt-4">
+        <h2 className="text-xl font-bold tracking-tight">Shape your week</h2>
+        <p className="mt-1 text-sm text-zinc-500">Change anything below, then update your plan.</p>
+      </div>
 
       <Card className="text-sm">
-        <p className="font-semibold">Fixed this week</p>
+        <p className="font-semibold">Fixed every week</p>
         <p className="mt-1 text-xs text-zinc-500">
-          {classes ? `${classes} courses from your saved semester plan` : "No saved semester yet. Rhett will use your suggested plan."}
+          {classes ? `${classes} courses from your saved semester plan` : "No saved semester yet. CampusWizard will use your suggested plan."}
         </p>
         {(profile.clubs ?? []).length === 0 && <p className="mt-2 text-xs text-zinc-400">No club meetings yet.</p>}
         <ul className="mt-2 space-y-1">
@@ -140,7 +171,7 @@ export default function WeekPage() {
         <div className="mt-4 border-t border-zinc-100 pt-3">
           <p className="text-sm font-semibold">Add club meetings from an email</p>
           <p className="mt-0.5 text-xs text-zinc-500">
-            Paste a club newsletter or announcement and Rhett finds the meetings. Add the weekly ones and your week is planned around them.
+            Paste a club newsletter or announcement and CampusWizard finds the meetings. Add the weekly ones and your week is planned around them.
           </p>
           <textarea
             value={paste}
@@ -177,6 +208,7 @@ export default function WeekPage() {
       <GmailScan onAdd={addClub} />
 
       <Card className="grid grid-cols-2 gap-2">
+        <p className="col-span-2 font-semibold">Your rhythm</p>
         <label className="text-sm">
           <span className="text-xs text-zinc-500">Wake up</span>
           <input type="time" value={toInputTime(prefs.wakeTime)} onChange={(e) => setPrefs({ wakeTime: fromInputTime(e.target.value) })} className="mt-1 w-full rounded-lg border border-zinc-300 p-2" />
@@ -210,22 +242,9 @@ export default function WeekPage() {
         </div>
       </Card>
 
-      {error && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      <Button onClick={build} disabled={loading}>{loading ? "Planning…" : "Plan my week"}</Button>
-
-      {plan && (
-        <>
-          <WeekView plan={plan} />
-          {/* CalendarExport renders only when Google is connected; shows a
-              preview + confirm flow before exporting. The onClose link inside
-              it lets the user fall back to .ics if they prefer. */}
-          <CalendarExport
-            weekOf={plan.weekOf}
-            events={plan.events}
-          />
-          <Button variant="secondary" onClick={downloadIcs}>Add to Google / Apple Calendar (.ics)</Button>
-        </>
-      )}
+      <div>
+        <Button onClick={async () => { await build(); window.scrollTo({ top: 0, behavior: "smooth" }); }} disabled={loading}>{loading ? "Planning…" : "Update my week"}</Button>
+      </div>
     </div>
   );
 }

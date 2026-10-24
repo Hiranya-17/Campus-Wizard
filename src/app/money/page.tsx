@@ -164,8 +164,8 @@ function Budget() {
           onChange={(e) => { onFiles(e.target.files); e.target.value = ""; }}
         />
         <div className="grid grid-cols-2 gap-2">
-          <Button onClick={() => fileRef.current?.click()} disabled={busy}>{busy ? "Reading…" : "📷 Snap a receipt"}</Button>
-          <Button variant="secondary" onClick={() => uploadRef.current?.click()} disabled={busy}>📄 Upload files</Button>
+          <Button onClick={() => fileRef.current?.click()} disabled={busy}>{busy ? "Reading…" : "Snap a receipt"}</Button>
+          <Button variant="secondary" onClick={() => uploadRef.current?.click()} disabled={busy}>Upload files</Button>
         </div>
         <p className="text-[11px] text-zinc-500">Upload receipt photos, PDF receipts or statements, or a bank / card export (CSV or Excel).</p>
         <textarea value={paste} onChange={(e) => setPaste(e.target.value)} rows={2} placeholder="…or paste an order confirmation email (DoorDash, Amazon, MBTA)" className="w-full rounded-lg border border-zinc-300 p-2 text-xs" />
@@ -244,7 +244,7 @@ function Budget() {
 export default function MoneyPage() {
   return (
     <div className="space-y-4">
-      <PageTitle title="Money" subtitle="Track your semester budget and keep spending on pace." />
+      <PageTitle title="Spend with a little intention." subtitle="Your semester budget, receipts and spending pace, in one place." />
       <Budget />
     </div>
   );

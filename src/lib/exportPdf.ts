@@ -14,7 +14,7 @@ export async function exportExpensesPdf(expenses: Expense[], budget: Budget, nam
   const line = (x1: number, x2: number) => { doc.setDrawColor(220); doc.line(x1, y, x2, y); };
   const newPageIfNeeded = (need = 18) => { if (y + need > H - M) { doc.addPage(); y = M; } };
 
-  doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(204, 0, 0).text("Rhett · Expense report", M, y);
+  doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(204, 0, 0).text("CampusWizard · Expense report", M, y);
   y += 20;
   doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(90);
   doc.text(`${name ? `${name} · ` : ""}Semester ${budget.semesterStart} to ${budget.semesterEnd} · exported ${new Date().toLocaleDateString("en-US")}`, M, y);

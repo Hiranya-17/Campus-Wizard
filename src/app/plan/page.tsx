@@ -2,10 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChatPanel } from "@/components/ChatPanel";
 import { CourseHistoryPicker } from "@/components/CourseHistoryPicker";
-import { courseColor, ScheduleCalendar } from "@/components/ScheduleCalendar";
+import { ScheduleCalendar } from "@/components/ScheduleCalendar";
 import { missingPrereqs, SectionPicker } from "@/components/SectionPicker";
 import { SyllabusCard } from "@/components/SyllabusCard";
-import { Card, Pill } from "@/components/ui";
+import { IconLayers, IconSparkle } from "@/components/icons";
+import { Button, Card, CodeChip, EmptyState, PageTitle, Pill } from "@/components/ui";
 import { useProfile } from "@/lib/profile";
 import { conflicts, emptySchedule, shortCode, withCourse, withoutCourse } from "@/lib/schedule";
 import type { Course, PlannedCourse, Section } from "@/lib/types";
@@ -25,7 +26,7 @@ export default function PlanPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<Record<string, Course>>({});
   const [history, setHistory] = useState(false);
-  const [rhett, setRhett] = useState(false);
+  const [rhett, setCampusWizard] = useState(false);
 
   useEffect(() => {
     setSearched(false);
@@ -75,14 +76,13 @@ export default function PlanPage() {
 
   return (
     <div className="space-y-4 pb-16">
-      <div className="flex items-end justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Build your schedule</h1>
-          <p className="mt-1 text-sm text-zinc-500">Search a course, pick a section, see clashes live.</p>
-        </div>
-        <select value={term} onChange={(e) => update({ term: e.target.value })} className="rounded-lg border border-zinc-300 bg-white p-2 text-sm font-medium">
+      <PageTitle title="A little foresight. A better semester." subtitle="Shape your semester one course at a time. Clashes show up before you add a class." />
+      <div className="-mt-2 flex items-center gap-2">
+        <label className="sr-only" htmlFor="term">Term</label>
+        <select id="term" value={term} onChange={(e) => update({ term: e.target.value })} className="min-h-11 rounded-xl border border-zinc-300 bg-white px-3 text-sm font-semibold">
           {TERMS.map((t) => <option key={t}>{t}</option>)}
         </select>
+        <span className="text-xs text-zinc-500">{schedule.courses.length} courses · {schedule.totalUnits} credits</span>
       </div>
 
       {term !== "Fall 2026" && (
@@ -137,7 +137,7 @@ export default function PlanPage() {
         </Card>
       )}
 
-      <Card className={open ? "sticky top-14 z-10 !p-2" : "!p-3"}>
+      {(schedule.courses.length > 0 || open) && <Card className={open ? "sticky top-14 z-10 !p-2" : "!p-3"}>
         <div className="mb-2 flex items-center justify-between px-1 text-xs">
           <span className="font-semibold">{term}</span>
           <span className="flex gap-1">
@@ -152,13 +152,24 @@ export default function PlanPage() {
           onSelect={(code) => setSelected(selected === code ? null : code)}
           scale={open ? 0.36 : 0.6}
         />
-      </Card>
+      </Card>}
 
       {schedule.courses.length === 0 ? (
-        <Card className="text-sm text-zinc-500">
-          No classes yet. Search above, or{" "}
-          <button className="font-semibold text-bu" onClick={() => setRhett(true)}>ask Rhett to suggest a schedule</button>.
-        </Card>
+        !open && (
+          <Card>
+            <EmptyState
+              icon={<IconLayers size={20} />}
+              title="Your next chapter is open."
+              body="Search any BU course above, or let CampusWizard suggest a schedule from your major. You can adjust every class."
+              action={
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button full={false} variant="secondary" onClick={() => document.querySelector<HTMLInputElement>('input[aria-label="Search BU courses"]')?.focus()}>Find a course</Button>
+                  <Button full={false} onClick={() => setCampusWizard(true)}><IconSparkle size={16} /> Suggest a schedule</Button>
+                </div>
+              }
+            />
+          </Card>
+        )
       ) : (
         <ul className="space-y-2">
           {schedule.courses.map((c, i) => {
@@ -168,10 +179,10 @@ export default function PlanPage() {
             return (
               <li key={c.code}>
                 <Card className={`!p-3 ${selected === c.code ? "ring-2 ring-zinc-900" : ""}`}>
-                  <div className="flex items-start gap-2">
-                    <span className={`mt-1 h-3 w-3 shrink-0 rounded-sm border-l-[3px] ${courseColor(i)}`} />
+                  <div className="flex items-start gap-3">
+                    <CodeChip code={shortCode(c.code)} index={i} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold">{c.code} · {c.title}</p>
+                      <p className="text-sm font-semibold">{c.title}</p>
                       <ul className="mt-0.5 text-xs text-zinc-600">
                         {c.sections.length ? c.sections.map((s, j) => (
                           <li key={j}><span className="font-mono">{s.section}</span> {s.schedule.raw} · {s.location} · {s.instructor}</li>
@@ -208,20 +219,20 @@ export default function PlanPage() {
       </Card>
 
       <button
-        onClick={() => setRhett(true)}
+        onClick={() => setCampusWizard(true)}
         className="fixed bottom-20 right-4 z-30 flex items-center gap-2 rounded-full bg-bu px-4 py-3 text-sm font-semibold text-white shadow-lg sm:right-[max(1rem,calc(50%-14rem))]"
       >
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-white text-xs font-black text-bu">R</span>
-        Ask Rhett
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-white text-bu"><IconSparkle size={15} /></span>
+        Ask CampusWizard
       </button>
 
       {/* kept mounted while hidden so the conversation (and replies still on their way) survive closing */}
       {(
-        <div className={`fixed inset-0 z-40 flex items-end justify-center bg-black/30 ${rhett ? "" : "hidden"}`} onClick={() => setRhett(false)}>
+        <div className={`fixed inset-0 z-40 flex items-end justify-center bg-black/30 ${rhett ? "" : "hidden"}`} onClick={() => setCampusWizard(false)}>
           <div className="flex h-[75dvh] w-full max-w-md flex-col rounded-t-3xl bg-zinc-50 p-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-2 flex items-center justify-between">
-              <p className="font-semibold">Rhett · {term} planning</p>
-              <button onClick={() => setRhett(false)} className="text-xl leading-none text-zinc-400" aria-label="Close">×</button>
+              <p className="font-semibold">CampusWizard · {term} planning</p>
+              <button onClick={() => setCampusWizard(false)} className="text-xl leading-none text-zinc-400" aria-label="Close">×</button>
             </div>
             <div className="min-h-0 flex-1">
               <ChatPanel

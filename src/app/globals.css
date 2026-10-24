@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
+/* CampusWizard design tokens: warm off-white canvas, white cards, one red accent */
 :root {
-  --bu-red: #cc0000;
-  --background: #f6f6f7;
+  --bu-red: #dc2626;
+  --background: #f7f7f5;
   --foreground: #18181b;
 }
 
@@ -10,10 +11,43 @@
   --color-bu: var(--bu-red);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* visible keyboard focus everywhere (never color alone) */
+:focus-visible {
+  outline: 2px solid var(--bu-red);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* 150-300ms transitions, and none at all for people who ask for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes cw-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.cw-enter { animation: cw-fade-up 220ms ease-out both; }
+
+@keyframes cw-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+.cw-skeleton {
+  background: linear-gradient(90deg, #f1f1ef 0px, #e7e7e4 80px, #f1f1ef 160px);
+  background-size: 400px 100%;
+  animation: cw-shimmer 1.2s linear infinite;
 }

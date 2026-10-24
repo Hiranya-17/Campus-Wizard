@@ -119,7 +119,7 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
   }
 
   return {
-    reply: "I'm Rhett. Try: \"Plan my spring semester\", \"Plan my week\", \"Can I take EC 413?\" or \"Cheapest way to order pizza\".",
+    reply: "I'm CampusWizard. Try: \"Plan my spring semester\", \"Plan my week\", \"Can I take EC 413?\" or \"Cheapest way to order pizza\".",
     cards: [],
   };
 }

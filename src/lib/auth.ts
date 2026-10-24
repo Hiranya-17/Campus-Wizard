@@ -25,7 +25,7 @@ function secret(): string {
 
 /** Accounts need a session secret, and on Vercel a real database (memory resets between requests). */
 export function accountsUnavailable(): string | null {
-  if (!process.env.AUTH_SECRET || storeKind === "memory") return "Accounts aren't set up on this server yet. You can keep using Rhett as a guest.";
+  if (!process.env.AUTH_SECRET || storeKind === "memory") return "Accounts aren't set up on this server yet. You can keep using CampusWizard as a guest.";
   return null;
 }
 

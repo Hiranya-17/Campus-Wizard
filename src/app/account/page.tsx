@@ -37,7 +37,7 @@ function GoogleConnectedCard() {
       <Card className="space-y-2 text-sm">
         <p className="font-medium">Connect Gmail &amp; Calendar</p>
         <p className="text-xs text-zinc-500">
-          Let Rhett read club emails and order confirmations from your inbox (read-only) and add your week to Google Calendar.
+          Let CampusWizard read club emails and order confirmations from your inbox (read-only) and add your week to Google Calendar.
         </p>
         <a href="/api/google/auth?connect=1" className="block w-full rounded-xl border border-zinc-300 bg-white py-2.5 text-center text-sm font-semibold">
           Connect Gmail &amp; Calendar
@@ -120,7 +120,7 @@ function FinishSetup({
 
   return (
     <div className="space-y-4">
-      <PageTitle title={`Welcome, ${profile.name?.split(" ")[0] ?? "Terrier"}!`} subtitle="One quick step so Rhett can plan your semester: your major, year and the courses you've already taken." />
+      <PageTitle title={`Welcome, ${profile.name?.split(" ")[0] ?? "Terrier"}!`} subtitle="One quick step so CampusWizard can plan your semester: your major, year and the courses you've already taken." />
       <Card className="grid grid-cols-2 gap-2 text-sm">
         <label className="col-span-2">
           <span className="text-xs text-zinc-500">Major</span>
@@ -148,7 +148,7 @@ function FinishSetup({
       <Card>
         <p className="text-sm font-semibold">Courses you&apos;ve taken before this semester</p>
         <p className="mb-3 text-xs text-zinc-500">
-          Rhett checks prerequisites against these. Don&apos;t include classes you&apos;re taking now.{units > 0 && ` ${units} units, so you're a ${profile.standing}.`}
+          CampusWizard checks prerequisites against these. Don&apos;t include classes you&apos;re taking now.{units > 0 && ` ${units} units, so you're a ${profile.standing}.`}
         </p>
         <CourseHistoryPicker majorId={profile.majorId} value={profile.completed} onChange={(completed) => update({ completed })} />
       </Card>
@@ -215,7 +215,7 @@ function Account() {
   if (user) {
     return (
       <div className="space-y-4">
-        <PageTitle title="Your account" />
+        <PageTitle title="Your workspace, your way." subtitle="Your profile, the courses you've taken, and connected apps." />
         <Card className="flex items-center gap-3">
           <span className="grid h-12 w-12 place-items-center rounded-full bg-bu text-lg font-bold text-white">{user.name[0]?.toUpperCase()}</span>
           <div>
@@ -232,7 +232,8 @@ function Account() {
           <CourseHistoryPicker majorId={profile.majorId} value={profile.completed} onChange={(completed) => update({ completed })} />
         </Card>
         <GoogleConnectedCard />
-        <Button variant="secondary" onClick={async () => { await logout(); window.location.href = "/"; }}>Log out</Button>
+        <Button variant="secondary" onClick={() => window.dispatchEvent(new Event("cw:tour"))}>Replay workspace tour</Button>
+        <Button variant="ghost" onClick={async () => { await logout(); window.location.href = "/"; }}>Log out</Button>
       </div>
     );
   }
@@ -288,14 +289,17 @@ function Account() {
         {mode === "signup" && !form.keepGuest && (
           <Card>
             <p className="text-sm font-semibold">Courses you&apos;ve taken before this semester</p>
-            <p className="mb-3 text-xs text-zinc-500">Rhett checks prerequisites against these. Don&apos;t include classes you&apos;re taking now. {historyUnits > 0 && `${historyUnits} units, so you're a ${form.standing}.`}</p>
+            <p className="mb-3 text-xs text-zinc-500">CampusWizard checks prerequisites against these. Don&apos;t include classes you&apos;re taking now. {historyUnits > 0 && `${historyUnits} units, so you're a ${form.standing}.`}</p>
             <CourseHistoryPicker majorId={form.majorId} value={form.completed} onChange={(completed) => set({ completed })} />
           </Card>
         )}
         {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <Button type="submit" disabled={busy}>{busy ? "One sec…" : mode === "signup" ? "Create account" : "Log in"}</Button>
       </form>
-      <button onClick={reset} className="w-full text-center text-xs text-zinc-400">Reset guest demo data</button>
+      <div className="flex justify-center gap-4 text-xs text-zinc-500">
+        <button onClick={() => window.dispatchEvent(new Event("cw:tour"))} className="underline">Replay workspace tour</button>
+        <button onClick={reset} className="underline">Reset guest demo data</button>
+      </div>
       <p className="text-center text-[11px] text-zinc-400">
         By continuing you agree to the <a href="/terms" className="underline">Terms</a> and <a href="/privacy" className="underline">Privacy Policy</a>.
       </p>
