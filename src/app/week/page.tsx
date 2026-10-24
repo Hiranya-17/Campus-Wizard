@@ -43,6 +43,7 @@ export default function WeekPage() {
   const [paste, setPaste] = useState("");
   const [found, setFound] = useState<ExtractedEvent[]>([]);
   const [extracting, setExtracting] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [task, setTask] = useState({ name: "", minutes: 30, timesPerWeek: 1 });
   const [error, setError] = useState<string | null>(null);
 
@@ -92,11 +93,12 @@ export default function WeekPage() {
       const res = await fetch("/api/extract-events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: /syllabus|midterm|exam|homework/i.test(paste) ? "syllabus" : "email", text: paste }),
+        body: JSON.stringify({ kind: "email", text: paste }),
       });
       if (!res.ok) throw new ApiError(res.status, "extract failed");
       const data: ExtractResponse = await res.json();
       setFound(data.events);
+      setSearched(true);
     } catch (err) {
       setError(errorText(err));
     }
@@ -124,6 +126,7 @@ export default function WeekPage() {
         <p className="mt-1 text-xs text-zinc-500">
           {classes ? `${classes} courses from your saved semester plan` : "No saved semester yet. Rhett will use your suggested plan."}
         </p>
+        {(profile.clubs ?? []).length === 0 && <p className="mt-2 text-xs text-zinc-400">No club meetings yet.</p>}
         <ul className="mt-2 space-y-1">
           {(profile.clubs ?? []).map((c) => (
             <li key={c.id} className="flex items-center gap-2 text-xs">
@@ -134,30 +137,47 @@ export default function WeekPage() {
             </li>
           ))}
         </ul>
-        <textarea
-          value={paste}
-          onChange={(e) => setPaste(e.target.value)}
-          rows={3}
-          aria-label="Club newsletter or syllabus text"
-          placeholder="Paste a club newsletter or syllabus. Rhett pulls out meetings, exams and deadlines."
-          className="mt-3 w-full rounded-lg border border-zinc-300 p-2 text-xs"
-        />
-        <p className="mt-1 text-[11px] text-zinc-400">Pasted text is sent to Google Gemini to find the events; we keep only the events you add.</p>
-        <div className="mt-2">
-          <Button variant="secondary" onClick={extract} disabled={!paste.trim() || extracting}>{extracting ? "Reading…" : "Find events"}</Button>
+        <div className="mt-4 border-t border-zinc-100 pt-3">
+          <p className="text-sm font-semibold">Add club meetings from an email</p>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            Paste a club newsletter or announcement and Rhett finds the meetings. Add the weekly ones and your week is planned around them.
+          </p>
+          <textarea
+            value={paste}
+            onChange={(e) => { setPaste(e.target.value); setSearched(false); }}
+            rows={3}
+            aria-label="Club email or announcement text"
+            placeholder={"e.g. \"General meetings are every Tuesday 7-8:30pm in PHO 117. Build night Nov 7, 6pm at EPIC.\""}
+            className="mt-2 w-full rounded-lg border border-zinc-300 p-2 text-xs"
+          />
+          <p className="mt-1 text-[11px] text-zinc-400">Pasted text is sent to Google Gemini to find the meetings; we keep only the ones you add.</p>
+          <div className="mt-2">
+            <Button variant="secondary" onClick={extract} disabled={!paste.trim() || extracting}>{extracting ? "Reading email…" : "Find meetings"}</Button>
+          </div>
+          {searched && found.length === 0 && (
+            <p role="status" className="mt-2 rounded-lg bg-zinc-100 px-3 py-2 text-xs text-zinc-600">No meetings found in that text. Try pasting the part with the days and times.</p>
+          )}
+          {found.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {found.map((e, i) => (
+                <li key={i} className="flex items-center gap-2 rounded-lg bg-zinc-50 px-2 py-1.5 text-xs">
+                  <span className="flex-1">{e.title} <span className="text-zinc-500">{e.weekday ? `every ${e.weekday}` : e.date} {e.start != null ? fmtTime(e.start) : ""}</span></span>
+                  {e.weekday && e.start != null ? (
+                    <button className="font-semibold text-bu" onClick={() => addClub(e)}>Add weekly</button>
+                  ) : (
+                    <Pill>one-time</Pill>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        {found.length > 0 && (
-          <ul className="mt-2 space-y-1">
-            {found.map((e, i) => (
-              <li key={i} className="flex items-center gap-2 rounded-lg bg-zinc-50 px-2 py-1.5 text-xs">
-                <Pill tone={e.kind === "exam" ? "amber" : "zinc"}>{e.kind}</Pill>
-                <span className="flex-1">{e.title} <span className="text-zinc-500">{e.weekday ?? e.date} {e.start != null ? fmtTime(e.start) : ""}</span></span>
-                {e.weekday && e.start != null && <button className="font-semibold text-bu" onClick={() => addClub(e)}>Add weekly</button>}
-              </li>
-            ))}
-          </ul>
-        )}
       </Card>
+
+      <GmailImport
+        mode="events"
+        onSaveEvents={(evts) => update({ clubs: [...(profile.clubs ?? []), ...evts] })}
+      />
 
       <Card className="grid grid-cols-2 gap-2">
         <label className="text-sm">
@@ -195,11 +215,6 @@ export default function WeekPage() {
 
       {error && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       <Button onClick={build} disabled={loading}>{loading ? "Planning…" : "Plan my week"}</Button>
-
-      <GmailImport
-        mode="events"
-        onSaveEvents={(evts) => update({ clubs: [...(profile.clubs ?? []), ...evts] })}
-      />
 
       {plan && (
         <>
