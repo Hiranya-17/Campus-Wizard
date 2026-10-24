@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { IconCalendar, IconPin } from "@/components/icons";
 import { Card, EmptyState, Pill } from "@/components/ui";
+import { orderUrl } from "@/lib/food";
 import { fmtTime, money } from "@/lib/format";
 import type { Course, Day, DiningHallToday, DiningRecommendation, EventKind, FoodComparison, SemesterPlanResponse, WeekEvent, WeekPlanResponse } from "@/lib/types";
 import { DAYS } from "@/lib/types";
@@ -299,9 +300,26 @@ export function FoodView({ data, onOrder }: { data: FoodComparison[]; onOrder?: 
             {open === r.restaurant ? "Hide fees ▲" : "Compare fees ▼"}
           </button>
           {open === r.restaurant && <FeeTable r={r} />}
+          <a
+            href={orderUrl(r.cheapest, r.restaurant)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-bu text-sm font-semibold text-white transition-colors hover:bg-red-700"
+          >
+            Order on {r.cheapest} for {money(r.quotes[0].total)} ↗
+          </a>
+          <p className="mt-1.5 text-center text-[11px] text-zinc-400">
+            Or open{" "}
+            {r.quotes.slice(1).map((q, i) => (
+              <span key={q.app}>
+                {i > 0 && " · "}
+                <a href={orderUrl(q.app, r.restaurant)} target="_blank" rel="noopener noreferrer" className="underline">{q.app}</a>
+              </span>
+            ))}
+          </p>
           {onOrder && (
-            <button onClick={() => onOrder(r)} className="mt-2 w-full rounded-lg border border-zinc-200 py-1.5 text-xs font-semibold text-bu">
-              I ordered on {r.cheapest}: log {money(r.quotes[0].total)}
+            <button onClick={() => onOrder(r)} className="mt-2 w-full rounded-lg border border-zinc-200 py-1.5 text-xs font-semibold text-zinc-700">
+              Ordered? Log {money(r.quotes[0].total)} in my budget
             </button>
           )}
         </Card>

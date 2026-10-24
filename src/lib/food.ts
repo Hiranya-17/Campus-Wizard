@@ -1,4 +1,4 @@
-import type { FoodComparison, FoodQuote } from "@/lib/types";
+import type { DeliveryApp, FoodComparison, FoodQuote } from "@/lib/types";
 
 /** Group quotes by restaurant and rank apps by total cost. */
 export function compareFood(quotes: FoodQuote[], restaurant?: string): FoodComparison[] {
@@ -19,4 +19,20 @@ export function compareFood(quotes: FoodQuote[], restaurant?: string): FoodCompa
       conveniencePointsApps: sorted.filter((s) => s.acceptsConveniencePoints).map((s) => s.app),
     };
   });
+}
+
+/**
+ * Link that searches the delivery app for the restaurant. On phones with the app installed these
+ * domains open the app directly (universal links); otherwise the website opens.
+ */
+export function orderUrl(app: DeliveryApp, restaurant: string): string {
+  const q = encodeURIComponent(restaurant.replace(/^SAMPLE\s+/i, ""));
+  switch (app) {
+    case "DoorDash":
+      return `https://www.doordash.com/search/store/${q}/`;
+    case "Uber Eats":
+      return `https://www.ubereats.com/search?q=${q}`;
+    case "Grubhub":
+      return `https://www.grubhub.com/search?queryText=${q}`;
+  }
 }
