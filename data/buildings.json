@@ -1,0 +1,200 @@
+{
+ "CAS": {
+  "name": "College of Arts & Sciences",
+  "address": "725 Commonwealth Avenue",
+  "lat": 42.350283,
+  "lon": -71.105577
+ },
+ "PSY": {
+  "name": "Psychology Building",
+  "address": "64 Cummington Mall",
+  "lat": 42.348772,
+  "lon": -71.104198
+ },
+ "SCI": {
+  "name": "Metcalf Science Center",
+  "address": "590 Commonwealth Avenue",
+  "lat": 42.348452,
+  "lon": -71.100163
+ },
+ "HAR": {
+  "name": "Questrom (Hariri Building)",
+  "address": "595 Commonwealth Avenue",
+  "lat": 42.34964,
+  "lon": -71.099732
+ },
+ "COM": {
+  "name": "College of Communication",
+  "address": "640 Commonwealth Avenue",
+  "lat": 42.348845,
+  "lon": -71.102318
+ },
+ "CGS": {
+  "name": "College of General Studies",
+  "address": "871 Commonwealth Avenue",
+  "lat": 42.351482,
+  "lon": -71.11459
+ },
+ "CFA": {
+  "name": "College of Fine Arts",
+  "address": "855 Commonwealth Avenue",
+  "lat": 42.351294,
+  "lon": -71.113877
+ },
+ "CDS": {
+  "name": "Center for Computing & Data Sciences",
+  "address": "665 Commonwealth Avenue",
+  "lat": 42.350023,
+  "lon": -71.103111
+ },
+ "PHO": {
+  "name": "Photonics Center",
+  "address": "8 Saint Mary's Street",
+  "lat": 42.349204,
+  "lon": -71.106109
+ },
+ "FLR": {
+  "name": "Fuller Building",
+  "address": "808 Commonwealth Avenue",
+  "lat": 42.350132,
+  "lon": -71.111401
+ },
+ "EPC": {
+  "name": "Engineering Product Innovation Center",
+  "address": "750 Commonwealth Avenue",
+  "lat": 42.349796,
+  "lon": -71.108031
+ },
+ "STH": {
+  "name": "School of Theology",
+  "address": "745 Commonwealth Avenue",
+  "lat": 42.350524,
+  "lon": -71.107545
+ },
+ "PRB": {
+  "name": "Physics Research Building",
+  "address": "3 Cummington Mall",
+  "lat": 42.348651,
+  "lon": -71.101265
+ },
+ "BRB": {
+  "name": "Biology Research Building",
+  "address": "5 Cummington Mall",
+  "lat": 42.348651,
+  "lon": -71.101265
+ },
+ "WED": {
+  "name": "Wheelock Education",
+  "address": "2 Silber Way",
+  "lat": 42.349723,
+  "lon": -71.100866
+ },
+ "KCB": {
+  "name": "Kenmore Classroom Building",
+  "address": "565 Commonwealth Avenue",
+  "lat": 42.349458,
+  "lon": -71.098105
+ },
+ "MCS": {
+  "name": "Math & Computer Science",
+  "address": "111 Cummington Mall",
+  "lat": 42.349091,
+  "lon": -71.104146
+ },
+ "ENG": {
+  "name": "Engineering Building",
+  "address": "110 Cummington Mall",
+  "lat": 42.349093,
+  "lon": -71.105456
+ },
+ "SAR": {
+  "name": "Sargent College",
+  "address": "635 Commonwealth Avenue",
+  "lat": 42.349821,
+  "lon": -71.102007
+ },
+ "SHA": {
+  "name": "School of Hospitality",
+  "address": "928 Commonwealth Avenue",
+  "lat": 42.35088,
+  "lon": -71.117508
+ },
+ "HIS": {
+  "name": "History Department",
+  "address": "226 Bay State Road",
+  "lat": 42.350446,
+  "lon": -71.103686
+ },
+ "KHC": {
+  "name": "Kilachand Honors College",
+  "address": "91 Bay State Road",
+  "lat": 42.35032,
+  "lon": -71.097003
+ },
+ "LSE": {
+  "name": "Life Science & Engineering",
+  "address": "24 Cummington Mall",
+  "lat": 42.348336,
+  "lon": -71.101739
+ },
+ "MUG": {
+  "name": "Mugar Library",
+  "address": "771 Commonwealth Avenue",
+  "lat": 42.351012,
+  "lon": -71.107992
+ },
+ "LAW": {
+  "name": "School of Law",
+  "address": "765 Commonwealth Avenue",
+  "lat": 42.351064,
+  "lon": -71.107507
+ },
+ "YAW": {
+  "name": "Yawkey Center",
+  "address": "100 Bay State Road",
+  "lat": 42.349787,
+  "lon": -71.097941
+ },
+ "STO": {
+  "name": "Stone Science Building",
+  "address": "675 Commonwealth Avenue",
+  "lat": 42.3501,
+  "lon": -71.103838
+ },
+ "WARREN": {
+  "name": "Warren Towers",
+  "address": "700 Commonwealth Avenue",
+  "lat": 42.349224,
+  "lon": -71.10312
+ },
+ "WEST": {
+  "name": "West Campus (Claflin Hall)",
+  "address": "273 Babcock Street",
+  "lat": 42.35258,
+  "lon": -71.119809
+ },
+ "STUVI": {
+  "name": "Student Village (StuVi)",
+  "address": "10 Buick Street",
+  "lat": 42.352395,
+  "lon": -71.11599
+ },
+ "MYLES": {
+  "name": "Myles Standish Hall",
+  "address": "610 Beacon Street",
+  "lat": 42.349699,
+  "lon": -71.094361
+ },
+ "FITREC": {
+  "name": "FitRec",
+  "address": "915 Commonwealth Avenue",
+  "lat": 42.35182,
+  "lon": -71.116462
+ },
+ "GSU": {
+  "name": "George Sherman Union",
+  "address": "775 Commonwealth Avenue",
+  "lat": 42.350967,
+  "lon": -71.108976
+ }
+}

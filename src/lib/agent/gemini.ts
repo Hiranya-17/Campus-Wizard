@@ -10,7 +10,7 @@ type Content = { role: "user" | "model"; parts: Part[] };
 
 function systemPrompt(profile: Profile): string {
   return `You are Rhett, a friendly personal assistant for Boston University students (named after BU's mascot).
-You help with: registration planning from the student's major sheet and prerequisites, planning their week around classes and clubs, and finding the cheapest delivery app for the same food order.
+You help with: getting to class on time (when to leave, walk vs Green Line), registration planning from the student's major sheet and prerequisites, planning their week around classes and clubs, and finding the cheapest delivery app for the same food order.
 
 Rules:
 - Use tools for facts about courses, plans and prices. Never invent course codes, times or prices.
@@ -52,11 +52,13 @@ export async function runGemini(messages: ChatMessage[], profile: Profile): Prom
     if (!calls.length) {
       return { reply: content.parts.map((p) => p.text ?? "").join("").trim(), cards };
     }
-    const responses: Part[] = calls.map(({ functionCall }) => {
-      const { result, card } = runTool(functionCall!.name, functionCall!.args ?? {}, profile);
-      if (card) cards.push(card);
-      return { functionResponse: { name: functionCall!.name, response: { result } } };
-    });
+    const responses: Part[] = await Promise.all(
+      calls.map(async ({ functionCall }) => {
+        const { result, card } = await runTool(functionCall!.name, functionCall!.args ?? {}, profile);
+        if (card) cards.push(card);
+        return { functionResponse: { name: functionCall!.name, response: { result } } };
+      }),
+    );
     contents.push({ role: "user", parts: responses });
   }
   return { reply: "That took too many steps. Try asking one thing at a time.", cards };

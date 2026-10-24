@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RouteCard } from "@/components/RouteCard";
 import { Card } from "@/components/ui";
 import { EventRow } from "@/components/views";
 import { DEFAULT_PREFS } from "@/lib/demo";
@@ -18,8 +19,9 @@ const TILES = [
 ];
 
 export default function Home() {
-  const { profile } = useProfile();
+  const { profile, update } = useProfile();
   const router = useRouter();
+  const [week, setWeek] = useState<WeekEvent[]>([]);
   const [today, setToday] = useState<WeekEvent[] | null>(null);
   const [ask, setAsk] = useState("");
   const day: Day = DAYS[(new Date().getDay() + 6) % 7];
@@ -41,6 +43,7 @@ export default function Home() {
         body: JSON.stringify({ weekOf: "", fixed: [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? [])], prefs: profile.prefs ?? DEFAULT_PREFS }),
       });
       const plan: WeekPlanResponse = await r.json();
+      setWeek(plan.events);
       setToday(plan.events.filter((e) => e.day === day && e.kind !== "sleep"));
     })();
   }, [profile, day]);
@@ -59,6 +62,11 @@ export default function Home() {
         <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="Ask Rhett: “Can I take EC 413?”" className="min-w-0 flex-1 px-2 text-sm outline-none" />
         <button className="rounded-xl bg-bu px-4 py-2 text-sm font-semibold text-white">Ask</button>
       </form>
+
+      <section>
+        <h2 className="mb-2 font-semibold">Getting to class</h2>
+        <RouteCard events={week} home={profile.home ?? "WARREN"} onHomeChange={(home) => update({ home })} />
+      </section>
 
       <section>
         <div className="mb-2 flex items-baseline justify-between">

@@ -189,6 +189,7 @@ export interface Profile {
   prefs?: WeekPrefs;
   clubs?: WeekEvent[]; // club meetings, from Gmail or typed in
   semester?: SemesterPlanResponse; // last accepted semester plan
+  home?: string; // building code where the day starts, e.g. "WARREN"
 }
 
 // ---------- POST /api/chat ----------

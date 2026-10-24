@@ -15,5 +15,5 @@ export async function POST(req: Request) {
       console.error(e);
     }
   }
-  return NextResponse.json({ ...runRules(messages, profile), engine: "rules" } satisfies ChatResponse);
+  return NextResponse.json({ ...(await runRules(messages, profile)), engine: "rules" } satisfies ChatResponse);
 }

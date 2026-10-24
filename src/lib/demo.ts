@@ -21,6 +21,7 @@ export const DEMO_PROFILE: Profile = {
     "CAS MA 225", "CAS PY 212", "ENG EK 307", "ENG EC 327", "CAS MA 193",
   ],
   prefs: DEFAULT_PREFS,
+  home: "WARREN",
   clubs: [
     { id: "club-robotics", title: "BU Robotics Club", day: "Tue", start: 1140, end: 1230, kind: "club", location: "PHO 117", fixed: true },
   ],

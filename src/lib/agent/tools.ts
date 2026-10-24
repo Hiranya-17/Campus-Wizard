@@ -4,7 +4,10 @@ import { compareFood } from "@/lib/food";
 import { missingGroups, planSemester } from "@/lib/planner/semester";
 import { classEvents, planWeek } from "@/lib/planner/week";
 import { DEFAULT_PREFS } from "@/lib/demo";
-import type { ChatCard, Profile, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
+import { fmtTime } from "@/lib/format";
+import { planRoute } from "@/lib/transit";
+import type { ChatCard, Day, Profile, SemesterPlanResponse, WeekPrefs } from "@/lib/types";
+import { DAYS } from "@/lib/types";
 
 /** Monday of next week as YYYY-MM-DD. */
 export function nextMonday(from = new Date()): string {
@@ -70,6 +73,17 @@ export const TOOL_DECLARATIONS = [
     parameters: { type: "object", properties: { restaurant: { type: "string" } } },
   },
   {
+    name: "route_day",
+    description: "When to leave for each class and how to get there (walk or Green Line, with live MBTA trains and the weather) for today or a given weekday, starting from where the student lives.",
+    parameters: {
+      type: "object",
+      properties: {
+        day: { type: "string", enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], description: "Defaults to today" },
+        from: { type: "string", description: "Building code to start from, e.g. WARREN, WEST, STUVI, MYLES" },
+      },
+    },
+  },
+  {
     name: "list_majors",
     description: "Majors Rhett has program planning sheets for.",
     parameters: { type: "object", properties: {} },
@@ -87,9 +101,22 @@ function parseTime(s: unknown): number | undefined {
   return h * 60 + Number(m[2] ?? 0);
 }
 
-export function runTool(name: string, args: Args, profile: Profile): ToolResult {
+export async function runTool(name: string, args: Args, profile: Profile): Promise<ToolResult> {
   const courses = getCourses();
   switch (name) {
+    case "route_day": {
+      const semester = profile.semester ?? ((await runTool("plan_semester", {}, profile)).card as { data: SemesterPlanResponse } | undefined)?.data;
+      const todayIdx = (new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" })).getDay() + 6) % 7;
+      const day = (args.day as Day) ?? DAYS[todayIdx];
+      const stops = [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? [])]
+        .filter((e) => e.day === day)
+        .map((e) => ({ title: e.title, start: e.start, end: e.end, location: e.location }));
+      if (!stops.length) return { result: { day, message: "No classes or club meetings that day." } };
+      const nowBoston = new Date().toLocaleTimeString("en-GB", { timeZone: "America/New_York", hour12: false }).split(":").map(Number);
+      const now = day === DAYS[todayIdx] ? nowBoston[0] * 60 + nowBoston[1] : 0;
+      const { legs } = await planRoute(String(args.from ?? profile.home ?? "WARREN"), stops, now);
+      return { result: { day, legs: legs.map((l) => ({ ...l, leaveBy: fmtTime(l.leaveBy), arriveBy: fmtTime(l.arriveBy), departs: l.transit ? fmtTime(l.transit.departs) : undefined })) } };
+    }
     case "search_courses": {
       const q = String(args.query ?? "").toLowerCase();
       const hits = [];
@@ -144,7 +171,7 @@ export function runTool(name: string, args: Args, profile: Profile): ToolResult 
       prefs.wakeTime = parseTime(args.wakeTime) ?? profile.prefs?.wakeTime ?? DEFAULT_PREFS.wakeTime;
       const semester =
         profile.semester ??
-        (runTool("plan_semester", {}, profile).card as { data: SemesterPlanResponse } | undefined)?.data;
+        ((await runTool("plan_semester", {}, profile)).card as { data: SemesterPlanResponse } | undefined)?.data;
       const fixed = [...classEvents(semester?.courses ?? []), ...(profile.clubs ?? [])];
       const plan = planWeek({ weekOf: nextMonday(), fixed, prefs });
       const summary = {
