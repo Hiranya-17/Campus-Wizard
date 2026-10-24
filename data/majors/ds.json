@@ -1,0 +1,251 @@
+{
+  "id": "ds",
+  "name": "Data Science (BS)",
+  "school": "CDS",
+  "classOf": "2029",
+  "totalUnits": 128,
+  "plan": [
+    {
+      "term": "First-year 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CDS DS 110"
+        },
+        {
+          "kind": "course",
+          "code": "CDS DS 120"
+        },
+        {
+          "kind": "course",
+          "code": "CAS WR 120"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "First-year 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CDS DS 121"
+        },
+        {
+          "kind": "course",
+          "code": "CDS DS 210"
+        },
+        {
+          "kind": "elective",
+          "group": "wr15x"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CDS DS 122"
+        },
+        {
+          "kind": "course",
+          "code": "CAS MA 214"
+        },
+        {
+          "kind": "hub"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CDS DS 310"
+        },
+        {
+          "kind": "course",
+          "code": "CDS DS 320"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CDS DS 340"
+        },
+        {
+          "kind": "course",
+          "code": "CDS DS 380"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 2",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "dselective"
+        },
+        {
+          "kind": "elective",
+          "group": "dselective"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Senior 1",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "dselective"
+        },
+        {
+          "kind": "elective",
+          "group": "capstone"
+        }
+      ]
+    },
+    {
+      "term": "Senior 2",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "dselective"
+        },
+        {
+          "kind": "elective",
+          "group": "cdsany"
+        }
+      ]
+    }
+  ],
+  "electiveGroups": [
+    {
+      "id": "wr15x",
+      "name": "Writing & Research Seminar (WR 15x)",
+      "count": 1,
+      "courses": [
+        "CAS WR 150",
+        "CAS WR 151",
+        "CAS WR 152",
+        "CAS WR 153"
+      ]
+    },
+    {
+      "id": "dselective",
+      "name": "Data Science Elective",
+      "count": 4,
+      "courses": [
+        "CDS DS 381",
+        "CDS DS 453",
+        "CDS DS 457",
+        "CDS DS 481",
+        "CDS DS 482",
+        "CDS DS 488",
+        "CDS DS 490",
+        "CDS DS 499",
+        "CDS DS 501",
+        "CDS DS 519",
+        "CDS DS 522",
+        "CDS DS 526",
+        "CDS DS 539",
+        "CDS DS 542",
+        "CDS DS 543",
+        "CDS DS 549",
+        "CDS DS 551",
+        "CDS DS 561",
+        "CDS DS 574",
+        "CDS DS 587",
+        "CDS DS 590",
+        "CDS DS 592",
+        "CDS DS 593",
+        "CDS DS 594",
+        "CDS DS 595",
+        "CDS DS 596",
+        "CDS DS 597",
+        "CDS DS 598",
+        "CDS DS 599"
+      ],
+      "rule": "One from each subject of the Methodology or In-the-Field track; see the CDS approved lists."
+    },
+    {
+      "id": "capstone",
+      "name": "Capstone or Practicum",
+      "count": 1,
+      "courses": [],
+      "rule": "At least 4 units of a supervised project (practicum course or directed study)."
+    },
+    {
+      "id": "cdsany",
+      "name": "Final 4 units (any CDS course)",
+      "count": 1,
+      "courses": [
+        "CDS DS 100",
+        "CDS DS 381",
+        "CDS DS 453",
+        "CDS DS 457",
+        "CDS DS 481",
+        "CDS DS 482",
+        "CDS DS 488",
+        "CDS DS 490",
+        "CDS DS 499",
+        "CDS DS 501",
+        "CDS DS 519",
+        "CDS DS 522",
+        "CDS DS 526",
+        "CDS DS 539",
+        "CDS DS 542",
+        "CDS DS 543",
+        "CDS DS 549",
+        "CDS DS 551",
+        "CDS DS 561",
+        "CDS DS 574",
+        "CDS DS 587",
+        "CDS DS 590",
+        "CDS DS 592",
+        "CDS DS 593",
+        "CDS DS 594",
+        "CDS DS 595",
+        "CDS DS 596",
+        "CDS DS 597",
+        "CDS DS 598",
+        "CDS DS 599"
+      ]
+    }
+  ],
+  "hubRequired": [
+    "Philosophical Inquiry and Life's Meanings",
+    "Aesthetic Exploration",
+    "Historical Consciousness",
+    "Social Inquiry",
+    "The Individual in Community",
+    "Global Citizenship and Intercultural Literacy",
+    "Global Citizenship and Intercultural Literacy",
+    "Ethical Reasoning"
+  ],
+  "notes": [
+    "16+ major courses, grade C or higher.",
+    "BU doesn't publish a term-by-term sequence for this major; Rhett's order follows prerequisites.",
+    "Source: https://www.bu.edu/academics/cds/programs/bs-in-data-science/"
+  ]
+}

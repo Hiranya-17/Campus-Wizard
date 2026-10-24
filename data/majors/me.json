@@ -1,0 +1,226 @@
+{
+  "id": "me",
+  "name": "Mechanical Engineering",
+  "school": "ENG",
+  "classOf": "2029",
+  "totalUnits": 135,
+  "plan": [
+    {
+      "term": "First-year 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CH 131"
+        },
+        {
+          "kind": "course",
+          "code": "CAS MA 123"
+        },
+        {
+          "kind": "course",
+          "code": "CAS WR 120"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 100"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 125"
+        }
+      ]
+    },
+    {
+      "term": "First-year 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 124"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 211"
+        },
+        {
+          "kind": "elective",
+          "group": "wr15x"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 103"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 131"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 225"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 212"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 307"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 357"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 226"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 210"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 301"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 381"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG ME 303"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 304"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 305"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 306"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 358"
+        }
+      ]
+    },
+    {
+      "term": "Junior 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG ME 302"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 310"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 360"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Senior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG ME 419"
+        },
+        {
+          "kind": "course",
+          "code": "ENG ME 460"
+        },
+        {
+          "kind": "elective",
+          "group": "advanced"
+        },
+        {
+          "kind": "elective",
+          "group": "advanced"
+        }
+      ]
+    },
+    {
+      "term": "Senior 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG ME 461"
+        },
+        {
+          "kind": "elective",
+          "group": "advanced"
+        },
+        {
+          "kind": "elective",
+          "group": "advanced"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    }
+  ],
+  "electiveGroups": [
+    {
+      "id": "wr15x",
+      "name": "Writing & Research Seminar (WR 15x)",
+      "count": 1,
+      "courses": [
+        "CAS WR 150",
+        "CAS WR 151",
+        "CAS WR 152",
+        "CAS WR 153"
+      ]
+    },
+    {
+      "id": "advanced",
+      "name": "Advanced Elective",
+      "count": 4,
+      "courses": [],
+      "rule": "See your department's approved list."
+    }
+  ],
+  "hubRequired": [
+    "Philosophical Inquiry and Life's Meanings",
+    "Aesthetic Exploration",
+    "Historical Consciousness",
+    "Social Inquiry",
+    "The Individual in Community",
+    "Global Citizenship and Intercultural Literacy",
+    "Global Citizenship and Intercultural Literacy",
+    "Ethical Reasoning"
+  ],
+  "notes": [
+    "Typical sequence from the BU Bulletin: https://www.bu.edu/academics/eng/programs/mechanical-engineering/bs/"
+  ]
+}

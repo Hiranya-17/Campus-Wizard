@@ -1,0 +1,239 @@
+{
+  "id": "cs",
+  "name": "Computer Science (BA)",
+  "school": "CAS",
+  "classOf": "2029",
+  "totalUnits": 128,
+  "plan": [
+    {
+      "term": "First-year 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CS 111"
+        },
+        {
+          "kind": "course",
+          "code": "CAS CS 131"
+        },
+        {
+          "kind": "course",
+          "code": "CAS WR 120"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "First-year 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CS 112"
+        },
+        {
+          "kind": "course",
+          "code": "CAS CS 132"
+        },
+        {
+          "kind": "elective",
+          "group": "wr15x"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CS 210"
+        },
+        {
+          "kind": "course",
+          "code": "CAS CS 237"
+        },
+        {
+          "kind": "hub"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CS 330"
+        },
+        {
+          "kind": "course",
+          "code": "CAS CS 235"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 1",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "groupc"
+        },
+        {
+          "kind": "elective",
+          "group": "groupd"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 2",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "groupc"
+        },
+        {
+          "kind": "elective",
+          "group": "groupd"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Senior 1",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "groupd"
+        },
+        {
+          "kind": "elective",
+          "group": "groupd"
+        }
+      ]
+    },
+    {
+      "term": "Senior 2",
+      "slots": [
+        {
+          "kind": "elective",
+          "group": "groupd"
+        },
+        {
+          "kind": "elective",
+          "group": "groupd"
+        }
+      ]
+    }
+  ],
+  "electiveGroups": [
+    {
+      "id": "wr15x",
+      "name": "Writing & Research Seminar (WR 15x)",
+      "count": 1,
+      "courses": [
+        "CAS WR 150",
+        "CAS WR 151",
+        "CAS WR 152",
+        "CAS WR 153"
+      ]
+    },
+    {
+      "id": "groupc",
+      "name": "Group C: Central Topics",
+      "count": 2,
+      "courses": [
+        "CAS CS 320",
+        "CAS CS 332",
+        "CAS CS 350"
+      ]
+    },
+    {
+      "id": "groupd",
+      "name": "Group D: CS Elective",
+      "count": 6,
+      "courses": [
+        "CAS CS 312",
+        "CAS CS 351",
+        "CAS CS 357",
+        "CAS CS 365",
+        "CAS CS 391",
+        "CAS CS 392",
+        "CAS CS 410",
+        "CAS CS 412",
+        "CAS CS 413",
+        "CAS CS 440",
+        "CAS CS 451",
+        "CAS CS 454",
+        "CAS CS 455",
+        "CAS CS 460",
+        "CAS CS 480",
+        "CAS CS 491",
+        "CAS CS 492",
+        "CAS CS 501",
+        "CAS CS 505",
+        "CAS CS 506",
+        "CAS CS 511",
+        "CAS CS 512",
+        "CAS CS 516",
+        "CAS CS 519",
+        "CAS CS 521",
+        "CAS CS 523",
+        "CAS CS 525",
+        "CAS CS 528",
+        "CAS CS 530",
+        "CAS CS 531",
+        "CAS CS 535",
+        "CAS CS 536",
+        "CAS CS 537",
+        "CAS CS 538",
+        "CAS CS 541",
+        "CAS CS 542",
+        "CAS CS 543",
+        "CAS CS 544",
+        "CAS CS 548",
+        "CAS CS 549",
+        "CAS CS 551",
+        "CAS CS 552",
+        "CAS CS 561",
+        "CAS CS 562",
+        "CAS CS 565",
+        "CAS CS 581",
+        "CAS CS 582",
+        "CAS CS 585",
+        "CAS CS 586",
+        "CAS CS 598",
+        "CAS CS 599"
+      ],
+      "rule": "Any CAS CS 300-500 course not used for Group C; up to two approved non-CS courses by petition."
+    }
+  ],
+  "hubRequired": [
+    "Philosophical Inquiry and Life's Meanings",
+    "Aesthetic Exploration",
+    "Historical Consciousness",
+    "Social Inquiry",
+    "The Individual in Community",
+    "Global Citizenship and Intercultural Literacy",
+    "Global Citizenship and Intercultural Literacy",
+    "Ethical Reasoning"
+  ],
+  "notes": [
+    "15 major courses, grade C or higher: all of Group A (CS 111, 112, 131, 210, 330), 2+ from Group B (CS 132, 235, 237), 2+ from Group C, the rest from Group D.",
+    "BU doesn't publish a term-by-term sequence for this major; Rhett's order follows prerequisites.",
+    "Source: https://www.bu.edu/academics/cas/programs/computer-science/ba/"
+  ]
+}

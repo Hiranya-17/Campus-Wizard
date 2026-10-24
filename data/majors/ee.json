@@ -1,0 +1,245 @@
+{
+  "id": "ee",
+  "name": "Electrical Engineering",
+  "school": "ENG",
+  "classOf": "2029",
+  "totalUnits": 131,
+  "plan": [
+    {
+      "term": "First-year 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 123"
+        },
+        {
+          "kind": "course",
+          "code": "CAS WR 120"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 100"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 125"
+        },
+        {
+          "kind": "elective",
+          "group": "naturalscience"
+        }
+      ]
+    },
+    {
+      "term": "First-year 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 124"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 211"
+        },
+        {
+          "kind": "elective",
+          "group": "wr15x"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 103"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 131"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 225"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 212"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 210"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 307"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 381"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 226"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 313"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 301"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG EC 311"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EC 401"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EC 410"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EC 455"
+        }
+      ]
+    },
+    {
+      "term": "Junior 2",
+      "slots": [
+        {
+          "kind": "hub"
+        },
+        {
+          "kind": "elective",
+          "group": "eecore"
+        },
+        {
+          "kind": "elective",
+          "group": "eecore"
+        },
+        {
+          "kind": "elective",
+          "group": "eecore"
+        }
+      ]
+    },
+    {
+      "term": "Senior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG EC 463"
+        },
+        {
+          "kind": "elective",
+          "group": "computer"
+        },
+        {
+          "kind": "elective",
+          "group": "technical"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Senior 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG EC 464"
+        },
+        {
+          "kind": "elective",
+          "group": "technical"
+        },
+        {
+          "kind": "elective",
+          "group": "technical"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    }
+  ],
+  "electiveGroups": [
+    {
+      "id": "naturalscience",
+      "name": "Natural Science Elective",
+      "count": 1,
+      "courses": [
+        "CAS AS 202",
+        "CAS BI 107",
+        "CAS BI 108",
+        "CAS CH 101",
+        "CAS CH 131",
+        "CAS PY 313"
+      ]
+    },
+    {
+      "id": "wr15x",
+      "name": "Writing & Research Seminar (WR 15x)",
+      "count": 1,
+      "courses": [
+        "CAS WR 150",
+        "CAS WR 151",
+        "CAS WR 152",
+        "CAS WR 153"
+      ]
+    },
+    {
+      "id": "eecore",
+      "name": "Ee Core Elective",
+      "count": 3,
+      "courses": [],
+      "rule": "See your department's approved list."
+    },
+    {
+      "id": "computer",
+      "name": "Computer Elective",
+      "count": 1,
+      "courses": [],
+      "rule": "See your department's approved list."
+    },
+    {
+      "id": "technical",
+      "name": "Technical Elective",
+      "count": 3,
+      "courses": [],
+      "rule": "See your department's approved list."
+    }
+  ],
+  "hubRequired": [
+    "Philosophical Inquiry and Life's Meanings",
+    "Aesthetic Exploration",
+    "Historical Consciousness",
+    "Social Inquiry",
+    "The Individual in Community",
+    "Global Citizenship and Intercultural Literacy",
+    "Global Citizenship and Intercultural Literacy",
+    "Ethical Reasoning"
+  ],
+  "notes": [
+    "Typical sequence from the BU Bulletin: https://www.bu.edu/academics/eng/programs/electrical-engineering/bs/"
+  ]
+}

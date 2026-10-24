@@ -1,0 +1,243 @@
+{
+  "id": "bme",
+  "name": "Biomedical Engineering",
+  "school": "ENG",
+  "classOf": "2029",
+  "totalUnits": 133,
+  "plan": [
+    {
+      "term": "First-year 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CH 101"
+        },
+        {
+          "kind": "course",
+          "code": "CAS MA 123"
+        },
+        {
+          "kind": "course",
+          "code": "CAS WR 120"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 100"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 125"
+        }
+      ]
+    },
+    {
+      "term": "First-year 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS CH 102"
+        },
+        {
+          "kind": "course",
+          "code": "CAS MA 124"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 211"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 103"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 131"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 225"
+        },
+        {
+          "kind": "course",
+          "code": "CAS PY 212"
+        },
+        {
+          "kind": "elective",
+          "group": "wr15x"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 210"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 301"
+        }
+      ]
+    },
+    {
+      "term": "Sophomore 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS MA 226"
+        },
+        {
+          "kind": "course",
+          "code": "ENG BE 209"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 307"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Junior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "CAS BI 315"
+        },
+        {
+          "kind": "course",
+          "code": "ENG BE 403"
+        },
+        {
+          "kind": "course",
+          "code": "ENG BE 493"
+        },
+        {
+          "kind": "course",
+          "code": "ENG EK 381"
+        }
+      ]
+    },
+    {
+      "term": "Junior 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG BE 424"
+        },
+        {
+          "kind": "elective",
+          "group": "fields"
+        },
+        {
+          "kind": "elective",
+          "group": "biomedicalengineerin"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Senior 1",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG BE 465"
+        },
+        {
+          "kind": "elective",
+          "group": "biomedicalengineerin"
+        },
+        {
+          "kind": "elective",
+          "group": "engineering"
+        },
+        {
+          "kind": "elective",
+          "group": "professional"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    },
+    {
+      "term": "Senior 2",
+      "slots": [
+        {
+          "kind": "course",
+          "code": "ENG BE 466"
+        },
+        {
+          "kind": "elective",
+          "group": "biomedicalengineerin"
+        },
+        {
+          "kind": "elective",
+          "group": "professional"
+        },
+        {
+          "kind": "hub"
+        }
+      ]
+    }
+  ],
+  "electiveGroups": [
+    {
+      "id": "wr15x",
+      "name": "Writing & Research Seminar (WR 15x)",
+      "count": 1,
+      "courses": [
+        "CAS WR 150",
+        "CAS WR 151",
+        "CAS WR 152",
+        "CAS WR 153"
+      ]
+    },
+    {
+      "id": "fields",
+      "name": "Fields Elective",
+      "count": 1,
+      "courses": [],
+      "rule": "See your department's approved list."
+    },
+    {
+      "id": "biomedicalengineerin",
+      "name": "Biomedical Engineering Design Elective",
+      "count": 3,
+      "courses": [],
+      "rule": "See your department's approved list."
+    },
+    {
+      "id": "engineering",
+      "name": "Engineering Elective",
+      "count": 1,
+      "courses": [],
+      "rule": "See your department's approved list."
+    },
+    {
+      "id": "professional",
+      "name": "Professional Elective",
+      "count": 2,
+      "courses": [],
+      "rule": "See your department's approved list."
+    }
+  ],
+  "hubRequired": [
+    "Philosophical Inquiry and Life's Meanings",
+    "Aesthetic Exploration",
+    "Historical Consciousness",
+    "Social Inquiry",
+    "The Individual in Community",
+    "Global Citizenship and Intercultural Literacy",
+    "Global Citizenship and Intercultural Literacy",
+    "Ethical Reasoning"
+  ],
+  "notes": [
+    "Typical sequence from the BU Bulletin: https://www.bu.edu/academics/eng/programs/biomedical-engineering/bs/"
+  ]
+}
