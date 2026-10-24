@@ -2,8 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import { BudgetView, CATEGORY_LABEL } from "@/components/BudgetView";
 import { CourseView, FoodView, SemesterView, WeekView } from "@/components/views";
+import { ApiError, postChat } from "@/lib/api";
 import { money } from "@/lib/format";
-import type { ChatCard, ChatMessage, ChatResponse, Profile } from "@/lib/types";
+import type { ChatCard, ChatMessage, Profile } from "@/lib/types";
 
 type Turn = ChatMessage & { cards?: ChatCard[] };
 
@@ -29,6 +30,7 @@ export function ChatPanel({
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const asked = useRef(false);
 
@@ -46,17 +48,13 @@ export function ChatPanel({
     setTurns(next);
     setInput("");
     setBusy(true);
+    setError(null);
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), profile }),
-      });
-      const data: ChatResponse = await res.json();
+      const data = await postChat({ messages: next.map(({ role, content }) => ({ role, content })), profile });
       setTurns([...next, { role: "assistant", content: data.reply, cards: data.cards }]);
       apply(data.cards);
-    } catch {
-      setTurns([...next, { role: "assistant", content: "I couldn't reach the server. Try again?" }]);
+    } catch (err) {
+      setError(err instanceof ApiError && err.status ? `Rhett hit a server error (${err.status}). Try again.` : "Couldn't reach Rhett. Check your connection and try again.");
     }
     setBusy(false);
   };
@@ -120,14 +118,15 @@ export function ChatPanel({
             </div>
           </div>
         ))}
-        {busy && <p className="text-sm text-zinc-400">Rhett is thinking…</p>}
+        {busy && <p role="status" aria-live="polite" className="text-sm text-zinc-400">Rhett is thinking…</p>}
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
         <div ref={bottom} />
       </div>
       <form
         onSubmit={(e) => { e.preventDefault(); send(input); }}
         className={`${compact ? "" : "sticky bottom-20"} mt-3 flex gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-md`}
       >
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask Rhett anything…" className="min-w-0 flex-1 px-2 text-sm outline-none" />
+        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask Rhett anything…" aria-label="Message Rhett" maxLength={500} className="min-w-0 flex-1 px-2 text-sm outline-none" />
         <button disabled={busy || !input.trim()} className="rounded-xl bg-bu px-4 py-2 text-sm font-semibold text-white disabled:bg-zinc-300">Send</button>
       </form>
     </div>
