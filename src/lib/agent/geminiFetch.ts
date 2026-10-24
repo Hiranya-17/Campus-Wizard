@@ -20,9 +20,10 @@ export async function geminiGenerate(body: unknown): Promise<{ candidates?: { co
     if (res.status === 429) {
       const text = await res.text();
       if (/PerDay/.test(text)) {
-        const wait = Number(text.match(/"retryDelay":\s*"(\d+)s"/)?.[1] ?? 3600);
+        // Pause for at most 10 minutes, so enabling billing (higher limits) takes effect quickly
+        const wait = Math.min(600, Number(text.match(/"retryDelay":\s*"(\d+)s"/)?.[1] ?? 600));
         quotaResetAt = Date.now() + wait * 1000;
-        throw new Error(`Gemini daily quota used up for ${Math.round(wait / 60)} min`);
+        throw new Error(`Gemini daily quota used up; retrying in ${Math.round(wait / 60)} min`);
       }
       if (attempt < 3) {
         await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
