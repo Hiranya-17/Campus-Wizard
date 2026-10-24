@@ -68,6 +68,8 @@ All shapes live in [`src/lib/types.ts`](src/lib/types.ts). Example data is in [`
 
 Times are minutes after midnight (`545` = 9:05 am). Days are `"Mon"`…`"Sun"`.
 
+Privacy Policy: https://ds-x-hackachusetts.vercel.app/privacy · Terms of Service: https://ds-x-hackachusetts.vercel.app/terms
+
 ## Data sources and credits
 
 - **BU course catalog** (bu.edu/academics, public course pages): courses, prerequisites, Hub areas and Fall 2026 sections, scraped politely by `scripts/scrape_bu_courses.py`.

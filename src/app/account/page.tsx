@@ -296,6 +296,9 @@ function Account() {
         <Button type="submit" disabled={busy}>{busy ? "One sec…" : mode === "signup" ? "Create account" : "Log in"}</Button>
       </form>
       <button onClick={reset} className="w-full text-center text-xs text-zinc-400">Reset guest demo data</button>
+      <p className="text-center text-[11px] text-zinc-400">
+        By continuing you agree to the <a href="/terms" className="underline">Terms</a> and <a href="/privacy" className="underline">Privacy Policy</a>.
+      </p>
     </div>
   );
 }
