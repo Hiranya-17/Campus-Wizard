@@ -45,3 +45,4 @@ next-env.d.ts
 
 # local account store (used when Upstash Redis is not configured)
 /data/.local-db.json
+!.env.example
