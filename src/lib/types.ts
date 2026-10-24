@@ -92,10 +92,12 @@ export interface WeekPrefs {
   sleepHours: number; // 8
   wakeTime: Minutes; // 450 = 7:30 am
   studyHoursPerDay: number;
-  gymDaysPerWeek: number;
-  gymMinutes: number;
-  /** Anything else weekly: "Call parents", 30 min, once a week. */
+  /** Weekly to-dos: "Gym", 60 min, 3 times a week; "Call parents", 30 min, once a week. */
   tasks: { name: string; minutes: number; timesPerWeek: number }[];
+  /** @deprecated older profiles only; turned into a "Gym" task by the planner */
+  gymDaysPerWeek?: number;
+  /** @deprecated older profiles only */
+  gymMinutes?: number;
 }
 
 export type EventKind = "class" | "club" | "exam" | "study" | "gym" | "sleep" | "meal" | "task" | "travel";

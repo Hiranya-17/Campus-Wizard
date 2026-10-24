@@ -74,15 +74,13 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "plan_week",
-    description: "Build next week's schedule around the student's classes and clubs, fitting sleep, meals, study, gym and weekly tasks. Ask the student about their preferences first if they haven't said.",
+    description: "Build next week's schedule around the student's classes and clubs, fitting sleep, meals, study and weekly to-dos (gym, calling home, laundry...). Ask the student about their preferences first if they haven't said.",
     parameters: {
       type: "object",
       properties: {
         sleepHours: { type: "number" },
         wakeTime: { type: "string", description: 'Like "7:30 am"' },
         studyHoursPerDay: { type: "number" },
-        gymDaysPerWeek: { type: "number" },
-        gymMinutes: { type: "number" },
         tasks: {
           type: "array",
           items: {

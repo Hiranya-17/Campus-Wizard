@@ -88,7 +88,7 @@ export default function WeekPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Plan my week" subtitle="Rhett fits sleep, meals, study, gym and your to-dos around classes and clubs." />
+      <PageTitle title="Plan my week" subtitle="Rhett fits sleep, meals, study and your weekly to-dos around classes and clubs." />
 
       <Card className="text-sm">
         <p className="font-semibold">Fixed this week</p>
@@ -135,8 +135,6 @@ export default function WeekPage() {
         </label>
         <Num label="Sleep (hours)" value={prefs.sleepHours} step={0.5} onChange={(n) => setPrefs({ sleepHours: n })} />
         <Num label="Study per day (hours)" value={prefs.studyHoursPerDay} step={0.5} onChange={(n) => setPrefs({ studyHoursPerDay: n })} />
-        <Num label="Gym days / week" value={prefs.gymDaysPerWeek} onChange={(n) => setPrefs({ gymDaysPerWeek: Math.min(7, n) })} />
-        <Num label="Gym minutes" value={prefs.gymMinutes} step={15} onChange={(n) => setPrefs({ gymMinutes: n })} />
         <div className="col-span-2">
           <p className="text-xs text-zinc-500">Weekly to-dos</p>
           <ul className="mt-1 space-y-1">
@@ -149,7 +147,7 @@ export default function WeekPage() {
             ))}
           </ul>
           <div className="mt-2 flex gap-1">
-            <input placeholder="Laundry, call home…" value={task.name} onChange={(e) => setTask({ ...task, name: e.target.value })} className="min-w-0 flex-1 rounded-lg border border-zinc-300 p-2 text-sm" />
+            <input placeholder="Gym, laundry, call home…" value={task.name} onChange={(e) => setTask({ ...task, name: e.target.value })} className="min-w-0 flex-1 rounded-lg border border-zinc-300 p-2 text-sm" />
             <input type="number" value={task.minutes} onChange={(e) => setTask({ ...task, minutes: Number(e.target.value) })} className="w-14 rounded-lg border border-zinc-300 p-2 text-sm" title="minutes" />
             <input type="number" value={task.timesPerWeek} onChange={(e) => setTask({ ...task, timesPerWeek: Number(e.target.value) })} className="w-11 rounded-lg border border-zinc-300 p-2 text-sm" title="times per week" />
             <button

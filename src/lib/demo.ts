@@ -4,9 +4,10 @@ export const DEFAULT_PREFS: WeekPrefs = {
   sleepHours: 8,
   wakeTime: 450,
   studyHoursPerDay: 3,
-  gymDaysPerWeek: 3,
-  gymMinutes: 60,
-  tasks: [{ name: "Call parents", minutes: 30, timesPerWeek: 1 }],
+  tasks: [
+    { name: "Gym", minutes: 60, timesPerWeek: 3 },
+    { name: "Call parents", minutes: 30, timesPerWeek: 1 },
+  ],
 };
 
 export const DEFAULT_BUDGET: Budget = {

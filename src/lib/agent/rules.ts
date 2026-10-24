@@ -80,7 +80,7 @@ export async function runRules(messages: ChatMessage[], profile: Profile): Promi
     const { result, card } = await runTool("plan_week", {}, profile);
     const r = result as { unscheduled: string[] };
     return {
-      reply: `Here's your week. ${r.unscheduled.length ? `Couldn't fit: ${r.unscheduled.join(", ")}.` : "Everything fit."} Change your sleep, study or gym settings in Week settings.`,
+      reply: `Here's your week. ${r.unscheduled.length ? `Couldn't fit: ${r.unscheduled.join(", ")}.` : "Everything fit."} Change your sleep, study and to-dos on the Week tab.`,
       cards: card ? [card] : [],
     };
   }
