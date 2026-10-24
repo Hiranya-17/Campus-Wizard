@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button, Card, PageTitle, Pill } from "@/components/ui";
-import { GmailImport } from "@/components/GmailImport";
+import { GmailScan } from "@/components/GmailScan";
 import { CalendarExport } from "@/components/CalendarExport";
 import { WeekView } from "@/components/views";
 import { ApiError, postSemesterPlan, postWeekPlan } from "@/lib/api";
@@ -108,7 +108,7 @@ export default function WeekPage() {
   const addClub = (e: ExtractedEvent) => {
     if (!e.weekday || e.start == null) return;
     const ev: WeekEvent = {
-      id: `club-${Date.now()}`, title: e.title.slice(0, 40), day: e.weekday, start: e.start,
+      id: `club-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, title: e.title.slice(0, 40), day: e.weekday, start: e.start,
       end: e.end ?? e.start + 60, kind: e.kind === "exam" ? "exam" : "club", location: e.location ?? undefined, fixed: true,
     };
     update({ clubs: [...(profile.clubs ?? []), ev] });
@@ -174,10 +174,7 @@ export default function WeekPage() {
         </div>
       </Card>
 
-      <GmailImport
-        mode="events"
-        onSaveEvents={(evts) => update({ clubs: [...(profile.clubs ?? []), ...evts] })}
-      />
+      <GmailScan onAdd={addClub} />
 
       <Card className="grid grid-cols-2 gap-2">
         <label className="text-sm">
