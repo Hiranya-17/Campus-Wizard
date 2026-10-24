@@ -18,7 +18,7 @@ Hackachusetts rules that constrain the remaining work:
 - Demo video under 3 minutes, public on YouTube/Vimeo, showing the app on a phone, with no third-party logos or copyrighted music.
 - Judges must be able to test it: the live app works without logging in.
 
-Live app: https://campuswizard.vercel.app · Repo: https://github.com/Hiranya-17/DS-X-HACKACHUSETTS (public). Pushing to `main` auto-deploys on Vercel in about a minute.
+Live app: https://campuswizard.vercel.app · Repo: https://github.com/Hiranya-17/Campus-Wizard (public). Pushing to `main` auto-deploys on Vercel in about a minute.
 
 ## 2. Stack
 

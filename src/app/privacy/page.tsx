@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = { title: "Privacy Policy · CampusWizard" };
 
-const REPO = "https://github.com/Hiranya-17/DS-X-HACKACHUSETTS";
+const REPO = "https://github.com/Hiranya-17/Campus-Wizard";
 
 function H({ children }: { children: React.ReactNode }) {
   return <h2 className="mt-6 text-lg font-semibold">{children}</h2>;
